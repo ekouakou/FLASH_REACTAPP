@@ -1,0 +1,72 @@
+/* Base styles */
+:root {
+  --background-light: #ffffff;
+  --text-light: #333333;
+  --background-dark: #222222;
+  --text-dark: #f0f0f0;
+  --afg-blue: #001051;
+  --blue-light: #021359;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+body.light {
+  background-color: var(--background-light);
+  color: var(--text-light);
+}
+
+body.dark {
+  background-color: var(--afg-blue);
+  color: var(--text-dark);
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+body.dark .actioncard{
+  background-color: var(--blue-light);
+}
+
+body.dark .actioncard h3{
+  color: var(--text-dark) !important;
+}
+
+
+body.wizzard .rs-steps-item-status-process .rs-steps-item-icon-wrapper {
+  background-color: #02ad02;
+  background-color: #03872b;
+  border-color: #02ad02;
+  border-color: #02ad02;
+  color: #f7f7fa;
+  color: var(--rs-text-inverse);
+}
+
+body.wizzard .rs-steps-item-status-finish .rs-steps-item-icon-wrapper {
+  border-color: #02ad02;
+  border-color: #02ad02;
+  color: #02ad02;
+  color: #02ad02;
+}
+
+body.dark .stepCard .rs-steps-item-status-finish .rs-steps-item-title:after {
+  border-color: #02ad02;
+  border-color: #02ad02;
+}
+
+body.dark .stepCard {
+  background-color: transparent !important;
+  padding: 15px;
+  border-radius: 12px;
+  box-shadow: rgba(0, 45, 98, 0.06) 0px 2px 8px;
+  border: 1px solid rgb(50 64 117) !important;
+}
