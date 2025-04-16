@@ -11,8 +11,8 @@ function ThemeSwitcher() {
   const isDarkMode = theme === 'dark';
   
   return (
-    <div className="theme-switcher">
-      <div className="theme-toggle-container">
+    <div className="theme-switcher ">
+      <div className="theme-toggle-container me-2">
         {/* <span className="toggle-icon">☀️</span> */}
         <Toggle 
           checked={isDarkMode}
