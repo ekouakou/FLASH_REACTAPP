@@ -3,6 +3,8 @@ import React from 'react';
 import { HashRouter as Router, Routes, Route } from 'react-router-dom';
 // import LoadExternalScripts from './AppComponents/LoadExternalScripts';
 import Wizard from './AppPages/Home/Wizard';
+import VerticalTicketWizard from './AppPages/Home/wiazard/VerticalTicketWizard';
+
 
 
 
@@ -15,6 +17,7 @@ function App() {
         <div className="content">
           <Routes>
             <Route path="/" element={<Wizard />} />
+            <Route path="/test" element={<VerticalTicketWizard />} />
           </Routes>
         </div>
         {/* <Footer /> */}

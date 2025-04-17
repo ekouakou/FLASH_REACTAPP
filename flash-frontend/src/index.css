@@ -58,12 +58,13 @@ body.wizzard .rs-steps-item-status-finish .rs-steps-item-icon-wrapper {
   color: #02ad02;
 }
 
-body.dark .stepCard .rs-steps-item-status-finish .rs-steps-item-title:after {
+body.dark .wizard-steps-card .rs-steps-item-status-finish .rs-steps-item-title:after, 
+body.light .wizard-steps-card .rs-steps-item-status-finish .rs-steps-item-title:after {
   border-color: #02ad02;
   border-color: #02ad02;
 }
 
-body.dark .stepCard {
+body.dark .wizard-steps-card {
   background-color: transparent !important;
   padding: 15px;
   border-radius: 12px;

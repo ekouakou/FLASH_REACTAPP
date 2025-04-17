@@ -1,24 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Steps,
-  Panel,
-  Button,
-  Stack,
-  Grid,
-  Row,
-  Col,
-  Form,
-  FlexboxGrid,
-  List,
-  Message,
-  Modal,
-  useMediaQuery,
-  Loader,
-  Animation
+  Steps, Panel, Button, Stack, Grid, Row, Col, Form, FlexboxGrid, List, Message, Modal, useMediaQuery, Loader, Animation
 } from 'rsuite';
 import 'rsuite/dist/rsuite.min.css';
 import './Wizard.css'; // Importation du fichier CSS externalisé
-import ThemeSwitcher from './ThemeSwitcher';
+import WizardNavbar from './WizardNavbar';
+import WizardFooter from './WizardFooter';
+
 
 // Utiliser des emojis au lieu d'icônes pour éviter les problèmes d'importation
 const serviceIcons = {
@@ -48,8 +36,6 @@ const VerticalTicketWizard = () => {
   const [showSuccess, setShowSuccess] = useState(false);
   const [validationErrors, setValidationErrors] = useState({});
   const [selectionDelay, setSelectionDelay] = useState(false);
-  const [currentTime, setCurrentTime] = useState('');
-  const [isFullScreen, setIsFullScreen] = useState(false);
   const [selectedOperation, setSelectedOperation] = useState(null);
   const [operationDelay, setOperationDelay] = useState(false);
 
@@ -77,51 +63,10 @@ const VerticalTicketWizard = () => {
     { id: 'conseil', name: 'Conseil', description: 'Obtenir un conseil', color: '#1abc9c' }
   ];
 
-  // Gestion du plein écran
-  const toggleFullScreen = () => {
-    if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen().catch(err => {
-        console.error(`Erreur lors du passage en plein écran: ${err.message}`);
-      });
-      setIsFullScreen(true);
-    } else {
-      if (document.exitFullscreen) {
-        document.exitFullscreen();
-        setIsFullScreen(false);
-      }
-    }
-  };
-
-  // Effets
-  useEffect(() => {
-    const handleFullScreenChange = () => {
-      setIsFullScreen(!!document.fullscreenElement);
-    };
-
-    document.addEventListener('fullscreenchange', handleFullScreenChange);
-
-    return () => {
-      document.removeEventListener('fullscreenchange', handleFullScreenChange);
-    };
-  }, []);
 
   useEffect(() => {
     // Générer un numéro de ticket aléatoire mais consistant
     setTicketNumber(`AFG-${Math.floor(Math.random() * 1000)}`);
-
-    // Mettre à jour l'heure actuelle
-    const updateTime = () => {
-      const now = new Date();
-      setCurrentTime(now.toLocaleTimeString('fr-FR', {
-        hour: '2-digit',
-        minute: '2-digit'
-      }));
-    };
-
-    updateTime();
-    const interval = setInterval(updateTime, 60000); // Mise à jour chaque minute
-
-    return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
@@ -661,43 +606,7 @@ const VerticalTicketWizard = () => {
   return (
     <div className="ticket-wizard-container">
       {/* Barre de navigation stylisée */}
-      <div className="wizard-nav">
-        <div className="wizard-nav-content">
-          <div className="wizard-logo-container">
-            <img
-              src="https://afgbankcotedivoire.com/wp-content/themes/cdg/images/logo.png"
-              alt="AFG Bank Logo"
-              className="wizard-logo"
-            />
-          </div>
-          <div className="wizard-nav-right">
-          <div
-              className=" me-2"
-              onClick={toggleFullScreen}
-              title={isFullScreen ? "Quitter le plein écran" : "Plein écran"}
-            >
-              <span className="wizard-fullscreen-icon">⛶</span>
-            </div>
-
-            <ThemeSwitcher />
-
-            <div className="wizard-time-display">
-              <small className="wizard-time-label">Heure actuelle</small>
-              <div className="wizard-time-value">{currentTime}</div>
-            </div>
-
-            
-
-            <div className="wizard-client-space">
-              Espace Client
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <h1 className="wizard-title">
-        Bienvenue dans notre service
-      </h1>
+      <WizardNavbar />
 
       <div className="wizard-layout">
         {/* Wizard Steps - Vertical pour écran large, Horizontal pour petit écran */}
@@ -739,9 +648,10 @@ const VerticalTicketWizard = () => {
               </span>
               <span className="wizard-progress-label">
                 {step === 0 && 'Choisir un service'}
-                {step === 1 && 'Renseigner les informations'}
-                {step === 2 && 'Vérifier le résumé'}
-                {step === 3 && 'Ticket généré'}
+                {step === 1 && 'Choisir une opération'}
+                {step === 2 && 'Renseigner les informations'}
+                {step === 3 && 'Vérifier le résumé'}
+                {step === 4 && 'Ticket généré'}
               </span>
             </div>
           )}
@@ -754,12 +664,7 @@ const VerticalTicketWizard = () => {
             {renderStepContent()}
           </Panel>
 
-          {/* Section bas de page */}
-          <div className="wizard-footer">
-            <p className="wizard-copyright">
-              &copy; {new Date().getFullYear()} AFG Bank Côte d'Ivoire - Tous droits réservés
-            </p>
-          </div>
+          <WizardFooter />
         </div>
       </div>
 
