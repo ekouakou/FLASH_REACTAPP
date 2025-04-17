@@ -1,8 +1,9 @@
 // steps/OperationSelection.jsx
 import React from 'react';
-import { Grid, Row, Col, Button, Stack } from 'rsuite';
-import SelectionCard from './SelectionCard.js';
+import { Grid, Row, Col, Button, Stack, Loader } from 'rsuite';
+import SelectionCard from './SelectionCard';
 import SelectionInfoBar from './SelectionInfoBar';
+import WizardStepHeader from './WizardStepHeader';
 
 const OperationSelection = ({
   operations,
@@ -15,19 +16,49 @@ const OperationSelection = ({
   getSelectedServiceName,
   getSelectedOperationColor,
   serviceIcons,
-  isMobile
+  isMobile,
+  getSelectedServiceData
 }) => {
+  // Récupérer les données du service sélectionné pour afficher l'image
+  const serviceData = getSelectedServiceData();
+  
+  // Vérifier si les opérations sont chargées
+  if (!operations || operations.length === 0) {
+    return (
+      <div>
+        <WizardStepHeader
+          title="Sélectionnez le type d'opération"
+          description="Chargement des opérations disponibles..."
+        />
+        <SelectionInfoBar
+          icon={serviceData.imagePath ? (
+            <img src={serviceData.imagePath} alt="Service" width={24} height={24} />
+          ) : serviceIcons[selectedService]}
+          label="Service sélectionné :"
+          value={getSelectedServiceName()}
+        />
+        <div className="loading-container text-center" style={{ padding: '40px 0' }}>
+          <Loader size="lg" content="Chargement des opérations..." vertical />
+        </div>
+        <div className="wizard-actions">
+          <Button appearance="subtle" onClick={handlePrevious}>
+            Retour
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div>
-      <h3 className="wizard-step-title">
-        Sélectionnez le type d'opération
-      </h3>
-      <p className="wizard-step-description">
-        Choisissez l'opération que vous souhaitez effectuer.
-      </p>
-
+      <WizardStepHeader
+        title="Sélectionnez le type d'opération"
+        description="Choisissez l'opération que vous souhaitez effectuer."
+      />
       <SelectionInfoBar
-        icon={serviceIcons[selectedService]}
+        icon={serviceData.imagePath ? (
+          <img src={serviceData.imagePath} alt="Service" width={24} height={24} />
+        ) : serviceIcons[selectedService]}
         label="Service sélectionné :"
         value={getSelectedServiceName()}
       />
@@ -35,13 +66,12 @@ const OperationSelection = ({
       <Grid fluid className="selection-grid">
         <Row gutter={isMobile ? 10 : 20}>
           {operations.map((operation) => (
-            <Col xs={24} sm={12} md={8} key={operation.id} style={{ marginBottom: '20px' }}>
+            <Col xs={24} sm={12} md={8} key={operation.id} style={{ marginBottom: '20px' }} className="equal-height-col">
               <SelectionCard
                 item={operation}
                 isSelected={selectedOperation === operation.id}
                 disabled={operationDelay && selectedOperation !== operation.id}
                 onSelect={() => !operationDelay && handleOperationSelect(operation.id)}
-                icon={operation.id.charAt(0).toUpperCase()}
                 type="operation"
               />
             </Col>
@@ -49,7 +79,7 @@ const OperationSelection = ({
         </Row>
       </Grid>
 
-      <Stack spacing={10} direction="row" justifyContent="space-between" className="wizard-actions">
+      <div className="wizard-actions">
         <Button appearance="subtle" onClick={handlePrevious}>
           Retour
         </Button>
@@ -66,7 +96,7 @@ const OperationSelection = ({
             Continuer
           </Button>
         )}
-      </Stack>
+      </div>
     </div>
   );
 };

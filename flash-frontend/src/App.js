@@ -16,8 +16,8 @@ function App() {
 
         <div className="content">
           <Routes>
-            <Route path="/" element={<Wizard />} />
-            <Route path="/test" element={<VerticalTicketWizard />} />
+            {/* <Route path="/" element={<Wizard />} /> */}
+            <Route path="/" element={<VerticalTicketWizard />} />
           </Routes>
         </div>
         {/* <Footer /> */}

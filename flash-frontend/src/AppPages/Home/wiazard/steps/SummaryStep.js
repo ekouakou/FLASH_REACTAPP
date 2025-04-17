@@ -51,9 +51,9 @@ const SummaryStep = ({
               </FlexboxGrid.Item>
               <FlexboxGrid.Item colspan={18}>
                 <div className="summary-item-value-container" style={{ backgroundColor: `${getSelectedOperationColor()}15` }}>
-                  <span className="summary-item-icon" style={{ color: getSelectedOperationColor() }}>
+                  {/* <span className="summary-item-icon" style={{ color: getSelectedOperationColor() }}>
                     {selectedOperation.charAt(0).toUpperCase()}
-                  </span>
+                  </span> */}
                   <span className="summary-item-value" style={{ color: getSelectedOperationColor() }}>
                     {getSelectedOperationName()}
                   </span>

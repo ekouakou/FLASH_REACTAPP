@@ -71,3 +71,14 @@ body.dark .wizard-steps-card {
   box-shadow: rgba(0, 45, 98, 0.06) 0px 2px 8px;
   border: 1px solid rgb(50 64 117) !important;
 }
+
+body.dark .wizard-panel {
+  padding: 15px;
+  border-radius: 16px;
+  border: 1px solid red;
+  background-color: transparent !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.01);
+  min-height: 400px;
+  border: 0;
+  border: 1px solid rgb(50 64 117) !important;
+}

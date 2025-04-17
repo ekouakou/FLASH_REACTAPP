@@ -7,7 +7,7 @@ const WizardFooter = () => {
       {/* Section bas de page */}
       <div className="wizard-footer">
             <p className="wizard-copyright">
-              &copy; {new Date().getFullYear()} AFG Bank Côte d'Ivoire - Tous droits réservés
+              &copy; {new Date().getFullYear()} NKM Technology - Tous droits réservés
             </p>
           </div>
     </>

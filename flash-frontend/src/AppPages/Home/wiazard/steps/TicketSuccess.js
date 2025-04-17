@@ -34,9 +34,9 @@ const TicketSuccess = ({
         </div>
       </div>
 
-      <p className="ticket-message">
+      {/* <p className="ticket-message">
         Veuillez patienter, nous vous appellerons bientôt.
-      </p>
+      </p> */}
 
       <Button
         appearance="primary"

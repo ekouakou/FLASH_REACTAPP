@@ -1,4 +1,4 @@
-// VerticalTicketWizard.jsx - Composant principal
+// VerticalTicketWizard.jsx - Modifications pour utiliser les données de l'API pour services et opérations
 import React, { useState, useEffect } from 'react';
 import {
   Steps, Panel, Loader, Animation, Modal, Button, useMediaQuery
@@ -14,8 +14,13 @@ import SummaryStep from './steps/SummaryStep';
 import TicketSuccess from './steps/TicketSuccess';
 import SuccessModal from './steps/SuccessModal';
 import { submitTicketRequest } from './steps/ticketApi';
+import useFetchData from '../../../services/useFetchData';
+import usePostData from "../../../services/usePostData";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
-// Utiliser des emojis au lieu d'icônes
+
+// Utiliser des emojis au lieu d'icônes (conservé comme fallback)
 export const serviceIcons = {
   information: "ℹ️",
   consultation: "📅",
@@ -25,24 +30,9 @@ export const serviceIcons = {
   reparation: "🔧"
 };
 
-// Liste des services disponibles
-export const services = [
-  { id: 'information', name: 'Operations de caisse', description: 'Renseignements généraux', color: '#3498db' },
-  { id: 'consultation', name: 'Moyens de paiement', description: 'Rencontrer un conseiller', color: '#9b59b6' },
-  { id: 'paiement', name: 'RDV conseillers', description: 'Effectuer un paiement', color: '#2ecc71' },
-  { id: 'reclamation', name: 'Operations Spécifiques', description: 'Déposer une réclamation', color: '#e74c3c' },
-  { id: 'livraison', name: 'Satisfaction client', description: 'Retrait de commande', color: '#f39c12' },
-  { id: 'reparation', name: 'Réparation', description: 'Service après-vente', color: '#1abc9c' }
-];
-
-// Liste des opérations disponibles
-export const operations = [
-  { id: 'depot', name: 'Dépôt', description: 'Faire un dépôt d\'argent', color: '#3498db' },
-  { id: 'retrait', name: 'Retrait', description: 'Effectuer un retrait', color: '#9b59b6' },
-  { id: 'virement', name: 'Virement', description: 'Réaliser un virement', color: '#2ecc71' },
-  { id: 'change', name: 'Change', description: 'Service de change', color: '#e74c3c' },
-  { id: 'credit', name: 'Crédit', description: 'Demander un crédit', color: '#f39c12' },
-  { id: 'conseil', name: 'Conseil', description: 'Obtenir un conseil', color: '#1abc9c' }
+// Couleurs pour les services et opérations (à associer dynamiquement avec les données de l'API)
+const serviceColors = [
+  '#3498db', '#9b59b6', '#2ecc71', '#e74c3c', '#f39c12', '#1abc9c'
 ];
 
 const { Fade } = Animation;
@@ -65,7 +55,81 @@ const VerticalTicketWizard = () => {
   const [selectionDelay, setSelectionDelay] = useState(false);
   const [operationDelay, setOperationDelay] = useState(false);
   const [apiSubmitting, setApiSubmitting] = useState(false);
-  const [apiError, setApiError] = useState(null);
+  // const [apiError, setApiError] = useState(null);
+  const [services, setServices] = useState([]);
+  const [operations, setOperations] = useState([]);
+
+  const { postData, loading, error: apiError } = usePostData("TicketManager/createTicket");
+
+  // Paramètres pour la requête des services
+  const serviceParams = {
+    LG_TYLID: "SERVICE",
+    mode: "listServicebyagence",
+    order: "t.STR_LSTOTHERVALUE2",
+    LG_AGEID: "004"
+  };
+
+  // Utilisation du hook pour récupérer les services
+  const {
+    data: fetchedServiceData,
+    error: fetchServiceError,
+    loading: fetchServiceLoading,
+    refetch: refetchServices
+  } = useFetchData("ConfigurationManager/listServicebyagence", serviceParams, "data");
+
+  // Paramètres pour la requête des opérations (avec selectedService comme dépendance)
+  const operationParams = {
+    search_value: "",
+    LG_TYLID: "PRODUIT",
+    STR_LSTOTHERVALUE: selectedService,
+    mode: "listAgenceListe",
+    order: "t.lgLstid.strLstothervalue2",
+    LG_AGEID: "004"
+  };
+
+
+  // Hook pour récupérer les opérations pour le service sélectionné
+  const {
+    data: fetchedOperationData,
+    error: fetchOperationError,
+    loading: fetchOperationLoading,
+    refetch: refetchOperations
+  } = useFetchData(
+    "ConfigurationManager/listAgenceListe",
+    selectedService ? operationParams : null, // On passe null si selectedService est null
+    "data",
+  );
+
+  // Convertir les données de services de l'API en format utilisable
+  useEffect(() => {
+    if (fetchedServiceData && Array.isArray(fetchedServiceData)) {
+      const mappedServices = fetchedServiceData.map((item, index) => ({
+        id: item.LG_LSTID,
+        name: item.STR_LSTVALUE,
+        description: item.STR_LSTDESCRIPTION,
+        color: serviceColors[index % serviceColors.length], // Attribuer une couleur depuis la liste
+        imagePath: `assets/images/${item.STR_FOLDER}${item.STR_IMAGELISTE.trim()}`,
+        iconName: item.STR_IMAGELISTE
+      }));
+      setServices(mappedServices);
+    }
+  }, [fetchedServiceData]);
+
+  // Convertir les données d'opérations de l'API en format utilisable
+  useEffect(() => {
+    if (fetchedOperationData && Array.isArray(fetchedOperationData)) {
+      const mappedOperations = fetchedOperationData.map((item, index) => ({
+        id: item.LG_LSTID,
+        name: item.STR_LSTVALUE,
+        description: item.STR_LSTDESCRIPTION,
+        color: serviceColors[index % serviceColors.length], // Attribuer une couleur depuis la liste
+        imagePath: `assets/images/${item.STR_FOLDER}${item.STR_IMAGELISTE.trim()}`,
+        iconName: item.STR_IMAGELISTE,
+        serviceId: item.STR_LSTOTHERVALUE // ID du service parent
+      }));
+      setOperations(mappedOperations);
+    }
+  }, [fetchedOperationData]);
 
   // Media queries pour le responsive design
   const isMobile = useMediaQuery('(max-width: 767px)');
@@ -111,6 +175,7 @@ const VerticalTicketWizard = () => {
   // Gestionnaires d'événements
   const handleServiceSelect = (serviceId) => {
     setSelectedService(serviceId);
+    setSelectedOperation(null); // Réinitialiser l'opération sélectionnée
     setSelectionDelay(true);
 
     setTimeout(() => {
@@ -151,59 +216,33 @@ const VerticalTicketWizard = () => {
   };
 
   const handleNext = async () => {
-    if (step === 1) {
-      // Validation du formulaire avant de passer à l'étape suivante
-      const errors = {};
-
-      if (!userData.name.trim()) {
-        errors.name = 'Le nom est obligatoire';
-      }
-
-      if (!userData.phone.trim()) {
-        errors.phone = 'Le téléphone est obligatoire';
-      } else if (!/^[0-9+\s-]{8,15}$/.test(userData.phone.trim())) {
-        errors.phone = 'Numéro de téléphone invalide';
-      }
-
-      if (userData.email && !/\S+@\S+\.\S+/.test(userData.email)) {
-        errors.email = 'Email invalide';
-      }
-
-      if (Object.keys(errors).length > 0) {
-        setValidationErrors(errors);
-        return;
-      }
-    }
-
     // Si on est à l'étape finale, soumettre le formulaire à l'API
     if (step === 3) {
       try {
-        setApiSubmitting(true);
-        setApiError(null);
-        
-        // Création de l'objet de données pour l'API
+
         const requestData = {
-          service: selectedService,
-          operation: selectedOperation,
-          userData: {
-            ...userData
-          },
-          requestDate: new Date().toISOString()
+          LG_LSTID: selectedOperation,
+          mode: "createTicket",
+          STR_TICCODEPRIORITE: "",
+          STR_TICPHONE: "0749345289",
+          STR_UTITOKEN: "",
+          LG_AGEID: "004",
+          LG_SOCID: ""
         };
 
-        console.log(requestData);
-        
-        // Appel à l'API
-        const response = await submitTicketRequest(requestData);
-        
-        // Si succès, mettre à jour le ticket avec la réponse de l'API
-        if (response && response.ticketNumber) {
-          setTicketNumber(response.ticketNumber);
-          setWaitTime(response.estimatedWaitTime || waitTime);
-        }
-        
-        setApiSubmitting(false);
-        
+        // const userData = await postData(requestData);
+
+        // if (userData?.code_statut === "1") {
+        //   toast.success("Votre ticket a été créé avec succès !");
+
+        //   // alert("ok");
+        //   // localStorage.setItem("user", JSON.stringify(userData));
+        // } else {
+        //   toast.error(userData?.desc_statut || "La création du ticket a échoué. Veuillez réessayer.");
+
+        //   // alert("echec");
+        //   // setError(userData?.desc_statut || "Erreur de connexion.");
+        // }
         // Animation de transition
         setIsLoading(true);
         setTimeout(() => {
@@ -212,7 +251,7 @@ const VerticalTicketWizard = () => {
         }, 400);
       } catch (error) {
         setApiSubmitting(false);
-        setApiError(error.message || "Une erreur est survenue lors de la soumission.");
+        // setApiError(error.message || "Une erreur est survenue lors de la soumission.");
         console.error("API error:", error);
       }
     } else {
@@ -245,7 +284,7 @@ const VerticalTicketWizard = () => {
     setSelectedOperation(null);
     setUserData({ name: '', phone: '', email: '' });
     setValidationErrors({});
-    setApiError(null);
+    // setApiError(null);
   };
 
   const validateUserData = () => {
@@ -254,6 +293,25 @@ const VerticalTicketWizard = () => {
 
   // Rendu du contenu en fonction de l'étape actuelle
   const renderStepContent = () => {
+    // Gestion du chargement initial des services
+    if (fetchServiceLoading && step === 0) {
+      return (
+        <div className="loading-container">
+          <Loader size="lg" content="Chargement des services..." vertical />
+        </div>
+      );
+    }
+
+    // Gestion du chargement des opérations
+    if (fetchOperationLoading && step === 1) {
+      return (
+        <div className="loading-container">
+          <Loader size="lg" content="Chargement des opérations..." vertical />
+        </div>
+      );
+    }
+
+    // Gestion du chargement des transitions
     if (isLoading) {
       return (
         <div className="loading-container">
@@ -262,12 +320,32 @@ const VerticalTicketWizard = () => {
       );
     }
 
+    // Gestion des erreurs de chargement des services
+    if (fetchServiceError && step === 0) {
+      return (
+        <div className="error-container">
+          <p className="error-message">Erreur lors du chargement des services. Veuillez réessayer.</p>
+          <Button onClick={refetchServices} appearance="primary">Réessayer</Button>
+        </div>
+      );
+    }
+
+    // Gestion des erreurs de chargement des opérations
+    if (fetchOperationError && step === 1) {
+      return (
+        <div className="error-container">
+          <p className="error-message">Erreur lors du chargement des opérations. Veuillez réessayer.</p>
+          <Button onClick={refetchOperations} appearance="primary">Réessayer</Button>
+        </div>
+      );
+    }
+
     switch (step) {
       case 0:
         return (
           <Fade in={true}>
-            <ServiceSelection 
-              services={services} 
+            <ServiceSelection
+              services={services}
               selectedService={selectedService}
               selectionDelay={selectionDelay}
               handleServiceSelect={handleServiceSelect}
@@ -281,7 +359,7 @@ const VerticalTicketWizard = () => {
       case 1:
         return (
           <Fade in={true}>
-            <OperationSelection 
+            <OperationSelection
               operations={operations}
               selectedOperation={selectedOperation}
               operationDelay={operationDelay}
@@ -293,6 +371,7 @@ const VerticalTicketWizard = () => {
               getSelectedOperationColor={() => getSelectedOperationData().color || ''}
               serviceIcons={serviceIcons}
               isMobile={isMobile}
+              getSelectedServiceData={getSelectedServiceData}
             />
           </Fade>
         );
@@ -300,7 +379,7 @@ const VerticalTicketWizard = () => {
       case 2:
         return (
           <Fade in={true}>
-            <UserInfoForm 
+            <UserInfoForm
               userData={userData}
               validationErrors={validationErrors}
               handleUserDataChange={handleUserDataChange}
@@ -318,7 +397,7 @@ const VerticalTicketWizard = () => {
       case 3:
         return (
           <Fade in={true}>
-            <SummaryStep 
+            <SummaryStep
               userData={userData}
               selectedService={selectedService}
               selectedOperation={selectedOperation}
@@ -338,7 +417,7 @@ const VerticalTicketWizard = () => {
       case 4:
         return (
           <Fade in={true}>
-            <TicketSuccess 
+            <TicketSuccess
               ticketNumber={ticketNumber}
               userData={userData}
               getSelectedServiceName={() => getSelectedServiceData().name || ''}
@@ -361,7 +440,7 @@ const VerticalTicketWizard = () => {
       <div className="wizard-layout">
         {/* Wizard Steps - Vertical pour écran large, Horizontal pour petit écran */}
         <div className="wizard-sidebar">
-          <div className="wizard-steps-card rounded-bottom">
+          <div className="wizard-steps-card rounded-bottom mb-20">
             <Steps
               current={step}
               vertical={!isMobile}
@@ -389,28 +468,14 @@ const VerticalTicketWizard = () => {
               />
             </Steps>
           </div>
-
-          {/* Indicateur de progression pour les écrans mobiles */}
-          {isMobile && (
-            <div className="wizard-mobile-progress">
-              <span className="wizard-progress-step">
-                Étape {step + 1} sur 5
-              </span>
-              <span className="wizard-progress-label">
-                {step === 0 && 'Choisir un service'}
-                {step === 1 && 'Choisir une opération'}
-                {step === 2 && 'Renseigner les informations'}
-                {step === 3 && 'Vérifier le résumé'}
-                {step === 4 && 'Ticket généré'}
-              </span>
-            </div>
-          )}
         </div>
 
         {/* Contenu principal */}
         <div className="wizard-content">
           <Panel className="wizard-panel">
             {renderStepContent()}
+            <ToastContainer position="top-right" autoClose={5000} hideProgressBar={false} />
+
           </Panel>
 
           <WizardFooter />
@@ -418,7 +483,7 @@ const VerticalTicketWizard = () => {
       </div>
 
       {/* Modal de confirmation */}
-      <SuccessModal 
+      <SuccessModal
         showSuccess={showSuccess}
         handleReset={handleReset}
       />

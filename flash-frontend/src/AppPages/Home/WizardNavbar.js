@@ -1,58 +1,71 @@
-// components/WizardNavbar.js
 import React, { useState, useEffect } from 'react';
 import ThemeSwitcher from "./ThemeSwitcher";
+import useFetchData from '../../services/useFetchData';
+
 
 const WizardNavbar = () => {
-    const [isFullScreen, setIsFullScreen] = useState(false);
-      const [currentTime, setCurrentTime] = useState('');
+  const [isFullScreen, setIsFullScreen] = useState(false);
+  const [currentTime, setCurrentTime] = useState('');
+  const [currentDate, setCurrentDate] = useState('');
 
+  useEffect(() => {
+    const updateTime = () => {
+      const now = new Date();
+      setCurrentTime(now.toLocaleTimeString('fr-FR', {
+        hour: '2-digit',
+        minute: '2-digit'
+      }));
+      setCurrentDate(now.toLocaleDateString('fr-FR')); // <- format 11/12/2025
 
-      useEffect(() => {
-          // Générer un numéro de ticket aléatoire mais consistant
-      
-          // Mettre à jour l'heure actuelle
-          const updateTime = () => {
-            const now = new Date();
-            setCurrentTime(now.toLocaleTimeString('fr-FR', {
-              hour: '2-digit',
-              minute: '2-digit'
-            }));
-          };
-      
-          updateTime();
-          const interval = setInterval(updateTime, 60000); // Mise à jour chaque minute
-      
-          return () => clearInterval(interval);
-        }, []);
-    
-  
-  // Gestion du plein écran
-    const toggleFullScreen = () => {
-      if (!document.fullscreenElement) {
-        document.documentElement.requestFullscreen().catch(err => {
-          console.error(`Erreur lors du passage en plein écran: ${err.message}`);
-        });
-        setIsFullScreen(true);
-      } else {
-        if (document.exitFullscreen) {
-          document.exitFullscreen();
-          setIsFullScreen(false);
-        }
-      }
+      // setCurrentDate(now.toLocaleDateString('fr-FR', {
+      //   weekday: 'long',
+      //   year: 'numeric',
+      //   month: 'long',
+      //   day: 'numeric'
+      // }));
     };
-  
-    // Effets
-    useEffect(() => {
-      const handleFullScreenChange = () => {
-        setIsFullScreen(!!document.fullscreenElement);
-      };
-  
-      document.addEventListener('fullscreenchange', handleFullScreenChange);
-  
-      return () => {
-        document.removeEventListener('fullscreenchange', handleFullScreenChange);
-      };
-    }, []);
+
+    updateTime();
+    const interval = setInterval(updateTime, 60000); // mise à jour toutes les minutes
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const {
+    data: fetchedAgenceData,
+    error: fetchOperationError,
+    loading: fetchOperationLoading,
+    refetch: refetchOperations
+  } = useFetchData(
+    "ConfigurationManager/getAgence",
+    {
+      mode: "getAgence",
+      LG_AGEID: "004"
+    }, // On passe null si selectedService est null
+  );
+
+  const toggleFullScreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(err => {
+        console.error(`Erreur lors du passage en plein écran: ${err.message}`);
+      });
+      setIsFullScreen(true);
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+        setIsFullScreen(false);
+      }
+    }
+  };
+
+  useEffect(() => {
+    const handleFullScreenChange = () => {
+      setIsFullScreen(!!document.fullscreenElement);
+    };
+
+    document.addEventListener('fullscreenchange', handleFullScreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullScreenChange);
+  }, []);
 
   return (
     <>
@@ -76,19 +89,16 @@ const WizardNavbar = () => {
 
             <ThemeSwitcher />
 
-            <div className="wizard-time-display">
-              <small className="wizard-time-label">Heure actuelle</small>
+            <div className="wizard-time-display text-end">
+              <small className="wizard-date-label">{currentDate}</small><br />
+              {/* <small className="wizard-time-label">Heure actuelle</small> */}
               <div className="wizard-time-value">{currentTime}</div>
             </div>
 
-            <div className="wizard-client-space">Espace Client</div>
+            <div className="wizard-client-space">{fetchedAgenceData?.STR_AGEDESCRIPTION}</div>
           </div>
         </div>
       </div>
-
-      {/* <h1 className="wizard-title">
-        Bienvenue dans notre service
-        </h1> */}
     </>
   );
 };

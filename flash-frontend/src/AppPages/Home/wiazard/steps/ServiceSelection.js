@@ -1,6 +1,6 @@
 // steps/ServiceSelection.jsx
 import React from 'react';
-import { Grid, Row, Col, Button } from 'rsuite';
+import { Grid, Row, Col, Button, Loader } from 'rsuite';
 import SelectionCard from './SelectionCard';
 
 const ServiceSelection = ({
@@ -12,6 +12,15 @@ const ServiceSelection = ({
   getSelectedServiceColor,
   isMobile
 }) => {
+  // Vérifier si les services sont chargés
+  if (!services || services.length === 0) {
+    return (
+      <div className="loading-container">
+        <Loader size="lg" content="Chargement des services..." vertical />
+      </div>
+    );
+  }
+
   return (
     <div>
       <h3 className="wizard-step-title">
@@ -24,7 +33,7 @@ const ServiceSelection = ({
       <Grid fluid className="selection-grid">
         <Row gutter={isMobile ? 10 : 20}>
           {services.map((service) => (
-            <Col xs={24} sm={12} md={8} key={service.id} style={{ marginBottom: '20px' }}>
+            <Col xs={24} sm={12} md={8} key={service.id} style={{ marginBottom: '20px' }}  className="equal-height-col">
               <SelectionCard
                 item={service}
                 isSelected={selectedService === service.id}
