@@ -1,0 +1,72 @@
+/* src/styles/main.css */
+/* Styles généraux */
+.main-container {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: #f7fafc;
+    overflow: hidden; /* Pour empêcher le scroll de la page */
+  }
+  
+  .main-content {
+    flex: 1;
+    padding: 15px;
+    overflow: hidden;
+  }
+  
+  .full-height {
+    height: 100%;
+  }
+  
+  .video-column {
+    transition: all 0.3s ease;
+    height: 100%;
+  }
+  
+  .queue-column {
+    transition: all 0.3s ease;
+    height: 100%;
+  }
+  
+  .video-section {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .queue-currency-container {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .currency-panel-container {
+    margin-top: 15px;
+  }
+  
+  .mr-10 {
+    margin-right: 10px;
+  }
+  
+  .mr-15 {
+    margin-right: 15px;
+  }
+  
+  .mb-10 {
+    margin-bottom: 10px;
+  }
+  
+  .text-right {
+    text-align: right;
+  }
+  
+  /* src/styles/header.css */
+  .app-header {
+    padding: 15px 20px;
+    background: white;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  }
+  
+  .header-icon {
+    color: #718096;
+    margin-right: 10px
