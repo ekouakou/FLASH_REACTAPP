@@ -131,7 +131,8 @@ function VideoSectionAuto({ videos, initialVideoIndex = 0, videoExpanded, setVid
                                     // Configurer le timer pour passer à la vidéo suivante 1 seconde avant la fin
                                     timerRef.current = setTimeout(() => {
                                         nextVideo();
-                                    }, duration - 2000);
+                                    }, duration - 3000);
+                                    console.log(`Durée de la vidéo YouTube------->: ${duration - 3000}ms`);
 
                                     // Nettoyer le player temporaire seulement s'il existe encore dans le DOM
                                     if (tempDivRef.current && document.body.contains(tempDivRef.current)) {
