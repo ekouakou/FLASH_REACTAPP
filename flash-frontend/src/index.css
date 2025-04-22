@@ -84,10 +84,3 @@ body.dark .wizard-panel {
 }
 
 
-.rs-panel {
-  border-radius: 6px;
-  overflow: hidden;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-}

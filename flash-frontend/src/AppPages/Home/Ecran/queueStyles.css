@@ -631,22 +631,6 @@ body.dark .message-scroll-bar {
   padding: 10px ;
 }
 
-
-
-
-/* wizard-styles.css */
-
-/* Style pour le conteneur principal */
-
-
-/* Style pour la section d'en-tête avec service sélectionné */
-.wizard-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-}
-
 /* Style pour le conteneur de chargement */
 .loading-container {
   padding: 40px 0;
