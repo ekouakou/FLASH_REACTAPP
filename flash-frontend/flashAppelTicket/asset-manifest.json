@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/flashAppelTicket/static/css/main.552579c6.css",
+    "main.js": "/flashAppelTicket/static/js/main.45c075fe.js",
+    "static/js/453.052e1f44.chunk.js": "/flashAppelTicket/static/js/453.052e1f44.chunk.js",
+    "index.html": "/flashAppelTicket/index.html",
+    "main.552579c6.css.map": "/flashAppelTicket/static/css/main.552579c6.css.map",
+    "main.45c075fe.js.map": "/flashAppelTicket/static/js/main.45c075fe.js.map",
+    "453.052e1f44.chunk.js.map": "/flashAppelTicket/static/js/453.052e1f44.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.552579c6.css",
+    "static/js/main.45c075fe.js"
+  ]
+}

@@ -5,11 +5,14 @@ const WizardFooter = () => {
   return (
     <>
       {/* Section bas de page */}
-      <div className="wizard-footer">
-            <p className="wizard-copyright">
-              &copy; {new Date().getFullYear()} NKM Technology - Tous droits réservés
-            </p>
-          </div>
+      <div className="image-container">
+        <img
+          src="https://afgbankcotedivoire.com/wp-content/themes/cdg/images/logo.png"
+          alt="Icône Operations de caisse"
+          height="20"
+          className="centered-image"
+        />
+      </div>
     </>
   );
 };

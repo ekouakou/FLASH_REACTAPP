@@ -1,299 +1,583 @@
-// VerticalTicketWizard.jsx - Modifications pour utiliser les données de l'API pour services et opérations
-import React, { useState, useEffect } from 'react';
-import {
-  Steps, Panel, Loader, Animation, Modal, Button, useMediaQuery
-} from 'rsuite';
-import 'rsuite/dist/rsuite.min.css';
-import '../Wizard.css';
-import WizardNavbar from '../WizardNavbar';
-import WizardFooter from '../WizardFooter';
-import ServiceSelection from './steps/ServiceSelection';
-import OperationSelection from './steps/OperationSelection';
-import UserInfoForm from './steps/UserInfoForm';
-import SummaryStep from './steps/SummaryStep';
-import TicketSuccess from './steps/TicketSuccess';
-import SuccessModal from './steps/SuccessModal';
-import { submitTicketRequest } from './steps/ticketApi';
-import useFetchData from '../../../services/useFetchData';
+import React, { useState, useEffect, useCallback } from "react";
+import { Steps, Panel, Loader, Animation, Button, useMediaQuery } from "rsuite";
+import "rsuite/dist/rsuite.min.css";
+import "../Wizard.css";
+import WizardNavbar from "../WizardNavbar";
+import WizardFooter from "../WizardFooter";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
+// Importation des composants d'étapes du wizard (externalisés)
+import ServiceSelection from "./steps/ServiceSelection";
+import OperationSelection from "./steps/OperationSelection";
+import PrestationSelection from "./steps/PrestationSelection";
+import PriorisationCodeStep from "./steps/PriorisationCodeStep";
+import SatisfactionFeedback from "./steps/SatisfactionFeedback";
+import UserInfoForm from "./steps/UserInfoForm";
+import SummaryStep from "./steps/SummaryStep";
+import TicketSuccess from "./steps/TicketSuccess";
+import SuccessModal from "./steps/SuccessModal";
+
+// Hooks personnalisés (externalisés)
+import useFetchData from "../../../services/useFetchData";
 import usePostData from "../../../services/usePostData";
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
 
-
-// Utiliser des emojis au lieu d'icônes (conservé comme fallback)
-export const serviceIcons = {
-  information: "ℹ️",
-  consultation: "📅",
-  paiement: "💳",
-  reclamation: "💬",
-  livraison: "📦",
-  reparation: "🔧"
-};
-
-// Couleurs pour les services et opérations (à associer dynamiquement avec les données de l'API)
-const serviceColors = [
-  '#3498db', '#9b59b6', '#2ecc71', '#e74c3c', '#f39c12', '#1abc9c'
-];
+// Constantes (externalisées)
+import { serviceIcons, serviceColors, API_ENDPOINTS } from "./constants";
 
 const { Fade } = Animation;
 
 const VerticalTicketWizard = () => {
-  // États principaux
-  const [step, setStep] = useState(0);
-  const [selectedService, setSelectedService] = useState(null);
-  const [selectedOperation, setSelectedOperation] = useState(null);
-  const [userData, setUserData] = useState({
-    name: '',
-    phone: '',
-    email: '',
+  // États principaux regroupés par catégorie
+  const [wizardState, setWizardState] = useState({
+    step: 0,
+    selectedService: null,
+    selectedOperation: null,
+    selectedPrestation: null,
+    priorisationCode: "",
+    selectedEmotion: null,
+    ticketNumber: "",
+    waitTime: 0,
+    showSuccess: false,
   });
-  const [ticketNumber, setTicketNumber] = useState('');
-  const [waitTime, setWaitTime] = useState(0);
-  const [isLoading, setIsLoading] = useState(false);
-  const [showSuccess, setShowSuccess] = useState(false);
-  const [validationErrors, setValidationErrors] = useState({});
-  const [selectionDelay, setSelectionDelay] = useState(false);
-  const [operationDelay, setOperationDelay] = useState(false);
-  const [apiSubmitting, setApiSubmitting] = useState(false);
-  // const [apiError, setApiError] = useState(null);
-  const [services, setServices] = useState([]);
-  const [operations, setOperations] = useState([]);
 
-  const { postData, loading, error: apiError } = usePostData("TicketManager/createTicket");
+  const [userData, setUserData] = useState({
+    name: "",
+    phone: "",
+    email: "",
+  });
 
-  // Paramètres pour la requête des services
+  const [uiState, setUiState] = useState({
+    isLoading: false,
+    selectionDelay: false,
+    operationDelay: false,
+    apiSubmitting: false,
+    validationErrors: {},
+  });
+
+  // Destructuration pour faciliter l'accès aux états
+  const {
+    step,
+    selectedService,
+    selectedOperation,
+    selectedPrestation,
+    priorisationCode,
+    selectedEmotion,
+    ticketNumber,
+    waitTime,
+    showSuccess,
+  } = wizardState;
+
+  const {
+    isLoading,
+    selectionDelay,
+    operationDelay,
+    apiSubmitting,
+    validationErrors,
+  } = uiState;
+
+  // Hook pour les données des services
   const serviceParams = {
     LG_TYLID: "SERVICE",
     mode: "listServicebyagence",
     order: "t.STR_LSTOTHERVALUE2",
-    LG_AGEID: "004"
+    LG_AGEID: "004",
   };
 
-  // Utilisation du hook pour récupérer les services
   const {
     data: fetchedServiceData,
     error: fetchServiceError,
     loading: fetchServiceLoading,
-    refetch: refetchServices
-  } = useFetchData("ConfigurationManager/listServicebyagence", serviceParams, "data");
+    refetch: refetchServices,
+  } = useFetchData(API_ENDPOINTS.SERVICES, serviceParams, "data");
 
-  // Paramètres pour la requête des opérations (avec selectedService comme dépendance)
+  // Hook pour les données des opérations
   const operationParams = {
     search_value: "",
     LG_TYLID: "PRODUIT",
     STR_LSTOTHERVALUE: selectedService,
     mode: "listAgenceListe",
     order: "t.lgLstid.strLstothervalue2",
-    LG_AGEID: "004"
+    LG_AGEID: "004",
   };
 
-
-  // Hook pour récupérer les opérations pour le service sélectionné
+  // const {
+  //   data: fetchedOperationData,
+  //   error: fetchOperationError,
+  //   loading: fetchOperationLoading,
+  //   refetch: refetchOperations,
+  // } = useFetchData(
+  //   API_ENDPOINTS.OPERATIONS,
+  //   selectedService ? operationParams : null,
+  //   "data"
+  // );
   const {
     data: fetchedOperationData,
     error: fetchOperationError,
     loading: fetchOperationLoading,
-    refetch: refetchOperations
+    refetch: refetchOperations,
   } = useFetchData(
-    "ConfigurationManager/listAgenceListe",
-    selectedService ? operationParams : null, // On passe null si selectedService est null
+    API_ENDPOINTS.OPERATIONS,
+    operationParams,
     "data",
+    0,
+    !selectedService // ⬅️ skip si selectedService est nul
   );
 
-  // Convertir les données de services de l'API en format utilisable
+  // Hook pour l'envoi des données du ticket
+  // Vous devez d'abord créer deux instances de votre hook - une pour chaque endpoint
+  const {
+    postData,
+    loading: postLoading,
+    error: apiError,
+  } = usePostData(API_ENDPOINTS.CREATE_TICKET);
+
+  const {
+    postData: postDataPriorisation,
+    loading: postPriorisationLoading,
+    error: apiPriorisationError,
+  } = usePostData(API_ENDPOINTS.VALIDATE_CREATE_TICKET);
+
+  const {
+    postData: postDataSatisfaction,
+    loading: postSatisfactionLoading,
+    error: apiSatisfactionError,
+  } = usePostData(API_ENDPOINTS.CREATE_COMMENTAIRE);
+
+  // État pour les données des services et opérations
+  const [services, setServices] = useState([]);
+  const [operations, setOperations] = useState([]);
+
+  // Media queries pour le responsive design
+  const isMobile = useMediaQuery("(max-width: 767px)");
+  const isExtraSmall = useMediaQuery("(max-width: 480px)");
+
+  // Fonction pour mettre à jour wizardState
+  const updateWizardState = useCallback((updates) => {
+    setWizardState((prev) => ({ ...prev, ...updates }));
+  }, []);
+
+  // Fonction pour mettre à jour uiState
+  const updateUiState = useCallback((updates) => {
+    setUiState((prev) => ({ ...prev, ...updates }));
+  }, []);
+
+  // Effet pour transformer les données des services
   useEffect(() => {
     if (fetchedServiceData && Array.isArray(fetchedServiceData)) {
       const mappedServices = fetchedServiceData.map((item, index) => ({
         id: item.LG_LSTID,
         name: item.STR_LSTVALUE,
         description: item.STR_LSTDESCRIPTION,
-        color: serviceColors[index % serviceColors.length], // Attribuer une couleur depuis la liste
-        imagePath: `assets/images/${item.STR_FOLDER}${item.STR_IMAGELISTE.trim()}`,
-        iconName: item.STR_IMAGELISTE
+        color: serviceColors[index % serviceColors.length],
+        imagePath: `assets/images/${
+          item.STR_FOLDER
+        }${item.STR_IMAGELISTE.trim()}`,
+        iconName: item.STR_IMAGELISTE,
       }));
       setServices(mappedServices);
     }
   }, [fetchedServiceData]);
 
-  // Convertir les données d'opérations de l'API en format utilisable
+  // Effet pour transformer les données des opérations
   useEffect(() => {
     if (fetchedOperationData && Array.isArray(fetchedOperationData)) {
       const mappedOperations = fetchedOperationData.map((item, index) => ({
         id: item.LG_LSTID,
         name: item.STR_LSTVALUE,
         description: item.STR_LSTDESCRIPTION,
-        color: serviceColors[index % serviceColors.length], // Attribuer une couleur depuis la liste
-        imagePath: `assets/images/${item.STR_FOLDER}${item.STR_IMAGELISTE.trim()}`,
+        color: serviceColors[index % serviceColors.length],
+        imagePath: `assets/images/${
+          item.STR_FOLDER
+        }${item.STR_IMAGELISTE.trim()}`,
         iconName: item.STR_IMAGELISTE,
-        serviceId: item.STR_LSTOTHERVALUE // ID du service parent
+        serviceId: item.STR_LSTOTHERVALUE,
       }));
       setOperations(mappedOperations);
     }
   }, [fetchedOperationData]);
 
-  // Media queries pour le responsive design
-  const isMobile = useMediaQuery('(max-width: 767px)');
-  const isExtraSmall = useMediaQuery('(max-width: 480px)');
-
+  // Effet pour générer un numéro de ticket lors de l'initialisation
   useEffect(() => {
-    // Générer un numéro de ticket aléatoire mais consistant
-    setTicketNumber(`AFG-${Math.floor(Math.random() * 1000)}`);
-  }, []);
+    updateWizardState({
+      ticketNumber: `AFG-${Math.floor(Math.random() * 1000)}`,
+    });
+  }, [updateWizardState]);
 
+  // Effet pour générer un numéro de ticket quand on arrive à l'étape finale
   useEffect(() => {
-    // Générer un numéro de ticket aléatoire quand on arrive à l'étape finale
-    if (step === 3) {
+    if (step === 5) {
       const randomTicket = `A-${Math.floor(Math.random() * 100)}`;
-      const randomWait = Math.floor(Math.random() * 20) + 5; // Entre 5 et 25 minutes
-      setTicketNumber(randomTicket);
-      setWaitTime(randomWait);
+      const randomWait = Math.floor(Math.random() * 20) + 5;
+      updateWizardState({
+        ticketNumber: randomTicket,
+        waitTime: randomWait,
+      });
     }
-  }, [step]);
+  }, [step, updateWizardState]);
 
   // Effet pour la redirection automatique après le modal de succès
   useEffect(() => {
     let timer;
     if (showSuccess) {
-      timer = setTimeout(() => {
-        handleReset();
-      }, 2000);
+      timer = setTimeout(handleReset, 2000);
     }
     return () => {
       if (timer) clearTimeout(timer);
     };
   }, [showSuccess]);
 
-  // Fonctions utilitaires pour obtenir les détails du service et de l'opération sélectionnés
-  const getSelectedServiceData = () => {
-    return services.find(s => s.id === selectedService) || {};
-  };
+  // Fonctions utilitaires optimisées
+  const getSelectedServiceData = useCallback(
+    () => services.find((s) => s.id === selectedService) || {},
+    [services, selectedService]
+  );
 
-  const getSelectedOperationData = () => {
-    return operations.find(o => o.id === selectedOperation) || {};
-  };
+  const getSelectedOperationData = useCallback(
+    () => operations.find((o) => o.id === selectedOperation) || {},
+    [operations, selectedOperation]
+  );
 
-  // Gestionnaires d'événements
-  const handleServiceSelect = (serviceId) => {
-    setSelectedService(serviceId);
-    setSelectedOperation(null); // Réinitialiser l'opération sélectionnée
-    setSelectionDelay(true);
+  const getSelectedPrestationColor = useCallback(() => {
+    if (selectedPrestation === "Service") return "#3498db";
+    if (selectedPrestation === "Priorisation") return "#9b59b6";
+    if (selectedPrestation === "Satisfaction") return "#2ecc71";
+    return "";
+  }, [selectedPrestation]);
 
-    setTimeout(() => {
-      setSelectionDelay(false);
+  // Gestionnaires d'événements optimisés avec useCallback
+  const handlePriorisationCodeChange = useCallback(
+    (code) => {
+      updateWizardState({ priorisationCode: code });
+    },
+    [updateWizardState]
+  );
+
+  const handleEmotionSelect = useCallback(
+    (emotion) => {
+      updateWizardState({ selectedEmotion: emotion });
+      updateUiState({ selectionDelay: true });
+
       setTimeout(() => {
-        setIsLoading(false);
-        setStep(1);
-      }, 100);
-    }, 700);
-  };
+        updateUiState({ selectionDelay: false });
+        setTimeout(() => {
+          updateUiState({ isLoading: false });
+          updateWizardState({ step: 3 });
+        }, 100);
+      }, 700);
+    },
+    [updateWizardState, updateUiState]
+  );
 
-  const handleOperationSelect = (operationId) => {
-    setSelectedOperation(operationId);
-    setOperationDelay(true);
-
-    setTimeout(() => {
-      setOperationDelay(false);
+  const handlePriorisationCodeSubmit = useCallback(() => {
+    if (priorisationCode.trim() !== "") {
+      updateUiState({ selectionDelay: true });
       setTimeout(() => {
-        setIsLoading(false);
-        setStep(2);
-      }, 100);
-    }, 700);
-  };
-
-  const handleUserDataChange = (value, name) => {
-    setUserData({
-      ...userData,
-      [name]: value
-    });
-
-    // Effacer l'erreur lorsque l'utilisateur corrige le champ
-    if (validationErrors[name]) {
-      setValidationErrors({
-        ...validationErrors,
-        [name]: null
-      });
+        updateUiState({ selectionDelay: false });
+        setTimeout(() => {
+          updateUiState({ isLoading: false });
+          updateWizardState({ step: 3 });
+        }, 100);
+      }, 700);
+    } else {
+      updateUiState((prev) => ({
+        ...prev,
+        validationErrors: {
+          ...prev.validationErrors,
+          priorisationCode: "Veuillez entrer un code de priorisation valide",
+        },
+      }));
     }
-  };
+  }, [priorisationCode, updateUiState, updateWizardState]);
 
-  const handleNext = async () => {
-    // Si on est à l'étape finale, soumettre le formulaire à l'API
+  const handlePrestationSelect = useCallback(
+    (prestationId) => {
+      updateWizardState({
+        selectedPrestation: prestationId,
+        selectedService: null,
+        selectedOperation: null,
+      });
+      updateUiState({ selectionDelay: true });
+
+      setTimeout(() => {
+        updateUiState({ selectionDelay: false });
+        setTimeout(() => {
+          updateUiState({ isLoading: false });
+
+          // Déterminer la prochaine étape selon la prestation
+          if (prestationId === "Service") {
+            updateWizardState({ step: 1 });
+          } else if (prestationId === "Priorisation") {
+            updateWizardState({ step: 1.5 });
+          } else if (prestationId === "Satisfaction") {
+            updateWizardState({ step: 1.75 });
+          }
+        }, 100);
+      }, 700);
+    },
+    [updateWizardState, updateUiState]
+  );
+
+  const handleServiceSelect = useCallback(
+    (serviceId) => {
+      updateWizardState({
+        selectedService: serviceId,
+        selectedOperation: null,
+      });
+      updateUiState({ selectionDelay: true });
+
+      setTimeout(() => {
+        updateUiState({ selectionDelay: false });
+        setTimeout(() => {
+          updateUiState({ isLoading: false });
+          updateWizardState({ step: 2 });
+        }, 100);
+      }, 700);
+    },
+    [updateWizardState, updateUiState]
+  );
+
+  const handleOperationSelect = useCallback(
+    (operationId) => {
+      updateWizardState({ selectedOperation: operationId });
+      updateUiState({ operationDelay: true });
+
+      setTimeout(() => {
+        updateUiState({ operationDelay: false });
+        setTimeout(() => {
+          updateUiState({ isLoading: false });
+          updateWizardState({ step: 3 });
+        }, 100);
+      }, 700);
+    },
+    [updateWizardState, updateUiState]
+  );
+
+  const handleUserDataChange = useCallback(
+    (value, name) => {
+      setUserData((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+
+      // Effacer l'erreur lorsque l'utilisateur corrige le champ
+      updateUiState((prev) => {
+        if (prev.validationErrors[name]) {
+          return {
+            ...prev,
+            validationErrors: {
+              ...prev.validationErrors,
+              [name]: null,
+            },
+          };
+        }
+        return prev;
+      });
+    },
+    [updateUiState]
+  );
+
+  const handleNext = useCallback(async () => {
+    // Si on est à l'étape du formulaire utilisateur, aller à l'étape récapitulative
     if (step === 3) {
+      updateUiState({ isLoading: true });
+      setTimeout(() => {
+        updateUiState({ isLoading: false });
+        updateWizardState({ step: 4 });
+      }, 400);
+    }
+    // Si on est à l'étape récapitulative, soumettre le formulaire à l'API
+    else if (step === 4) {
       try {
+        updateUiState({ apiSubmitting: true });
 
         const requestData = {
-          LG_LSTID: selectedOperation,
-          mode: "createTicket",
-          STR_TICCODEPRIORITE: "",
-          STR_TICPHONE: "0749345289",
-          STR_UTITOKEN: "",
+          // Valeurs communes à tous les types de prestation
           LG_AGEID: "004",
-          LG_SOCID: ""
+          LG_SOCID: "03",
+          STR_UTITOKEN: "0b5c7e97130599df6b3d",
+          STR_TICPHONE: userData.phone || "0749345289",
+          STR_TICNAME: userData.name,
+          STR_TICEMAIL: userData.email,
+          STR_PRESTATIONTYPE: selectedPrestation,
         };
 
-        // const userData = await postData(requestData);
+        // Ajout des données spécifiques selon le type de prestation
+        if (selectedPrestation === "Service") {
+          requestData.LG_LSTID = selectedOperation;
+          requestData.mode = "createTicket";
+        } else if (selectedPrestation === "Priorisation") {
+          requestData.STR_TICCODEPRIORITE = priorisationCode;
+          requestData.mode = "createTicket";
+        } else if (selectedPrestation === "Satisfaction") {
+          requestData.LG_LSTID = selectedEmotion;
+          requestData.mode = "createCommentaire";
+        }
 
-        // if (userData?.code_statut === "1") {
-        //   toast.success("Votre ticket a été créé avec succès !");
+        console.log("Données à envoyer:", requestData);
 
-        //   // alert("ok");
-        //   // localStorage.setItem("user", JSON.stringify(userData));
-        // } else {
-        //   toast.error(userData?.desc_statut || "La création du ticket a échoué. Veuillez réessayer.");
+        // Utilisez la fonction appropriée selon le type de prestation
+        let result;
+        if (selectedPrestation === "Priorisation") {
+          result = await postDataPriorisation(requestData);
+        } else if (selectedPrestation === "Satisfaction") {
+          result = await postDataSatisfaction(requestData);
+        } else {
+          result = await postData(requestData);
+        }
 
-        //   // alert("echec");
-        //   // setError(userData?.desc_statut || "Erreur de connexion.");
-        // }
-        // Animation de transition
-        setIsLoading(true);
-        setTimeout(() => {
-          setIsLoading(false);
-          setStep(step + 1);
-        }, 400);
+        // Vérifiez si la requête a réussi
+        if (result.code_statut === "1") {
+          updateUiState({
+            isLoading: true,
+            apiSubmitting: false,
+          });
+
+          setTimeout(() => {
+            updateUiState({ isLoading: false });
+            updateWizardState({ step: 5 });
+          }, 400);
+        } else {
+          throw new Error("La requête a échoué");
+        }
       } catch (error) {
-        setApiSubmitting(false);
-        // setApiError(error.message || "Une erreur est survenue lors de la soumission.");
+        updateUiState({ apiSubmitting: false });
+        toast.error("Erreur lors de l'enregistrement du ticket");
         console.error("API error:", error);
       }
     } else {
       // Animation de transition normale pour les autres étapes
-      setIsLoading(true);
+      updateUiState({ isLoading: true });
       setTimeout(() => {
-        setIsLoading(false);
-        setStep(step + 1);
+        updateUiState({ isLoading: false });
+        updateWizardState((prev) => ({ step: prev.step + 1 }));
       }, 400);
     }
-  };
+  }, [
+    step,
+    selectedOperation,
+    priorisationCode,
+    selectedEmotion,
+    selectedPrestation,
+    userData,
+    postData,
+    updateWizardState,
+    updateUiState,
+  ]);
 
-  const handlePrevious = () => {
-    setIsLoading(true);
+  const handlePrevious = useCallback(() => {
+    updateUiState({ isLoading: true });
+
     setTimeout(() => {
-      setIsLoading(false);
-      setStep(step - 1);
+      updateUiState({ isLoading: false });
+
+      // Logique de navigation en arrière en fonction de la prestation et de l'étape actuelle
+      if (step === 3) {
+        if (selectedPrestation === "Service") {
+          updateWizardState({ step: 2 });
+        } else if (selectedPrestation === "Priorisation") {
+          updateWizardState({ step: 1.5 });
+        } else if (selectedPrestation === "Satisfaction") {
+          updateWizardState({ step: 1.75 });
+        }
+      } else if (step === 2) {
+        updateWizardState({ step: 1 });
+      } else if (step === 1.5 || step === 1.75) {
+        updateWizardState({ step: 0 });
+      } else if (step === 1) {
+        updateWizardState({ step: 0 });
+      } else if (step === 4) {
+        updateWizardState({ step: 3 });
+      } else {
+        updateWizardState((prev) => ({ step: Math.max(0, prev.step - 1) }));
+      }
     }, 400);
-  };
+  }, [step, selectedPrestation, updateWizardState, updateUiState]);
 
-  const handleConfirm = () => {
-    setShowSuccess(true);
-  };
+  const handleConfirm = useCallback(() => {
+    updateWizardState({ showSuccess: true });
+  }, [updateWizardState]);
 
-  const handleReset = () => {
+  const handleReset = useCallback(() => {
     // Réinitialiser tout le wizard
-    setShowSuccess(false);
-    setStep(0);
-    setSelectedService(null);
-    setSelectedOperation(null);
-    setUserData({ name: '', phone: '', email: '' });
-    setValidationErrors({});
-    // setApiError(null);
-  };
+    updateWizardState({
+      step: 0,
+      selectedService: null,
+      selectedOperation: null,
+      selectedPrestation: null,
+      priorisationCode: "",
+      selectedEmotion: null,
+      showSuccess: false,
+      ticketNumber: `AFG-${Math.floor(Math.random() * 1000)}`,
+    });
 
-  const validateUserData = () => {
-    return userData.name.trim() !== '' && userData.phone.trim() !== '';
-  };
+    setUserData({ name: "", phone: "", email: "" });
+
+    updateUiState({
+      isLoading: false,
+      selectionDelay: false,
+      operationDelay: false,
+      apiSubmitting: false,
+      validationErrors: {},
+    });
+  }, [updateWizardState, updateUiState]);
+
+  const validateUserData = useCallback(() => {
+    return userData.name.trim() !== "" && userData.phone.trim() !== "";
+  }, [userData]);
+
+  // Calcul de l'étape courante pour le composant Steps
+  const calculateStepIndex = useCallback(() => {
+    if (!selectedPrestation) return 0;
+
+    switch (step) {
+      case 0:
+        return 0;
+      case 1:
+        return 1;
+      case 1.5:
+      case 1.75:
+        return 1;
+      case 2:
+        return selectedPrestation === "Service" ? 2 : 1;
+      case 3:
+        return selectedPrestation === "Service" ? 3 : 2;
+      case 4:
+        return selectedPrestation === "Service" ? 4 : 3;
+      case 5:
+        return selectedPrestation === "Service" ? 5 : 4;
+      default:
+        return 0;
+    }
+  }, [step, selectedPrestation]);
+
+  // Fonction pour obtenir le nom du service sélectionné
+  const getSelectedServiceName = useCallback(() => {
+    if (selectedPrestation === "Service") {
+      return getSelectedServiceData().name || "";
+    } else if (selectedPrestation === "Priorisation") {
+      return "Priorisation";
+    } else if (selectedPrestation === "Satisfaction") {
+      return "Satisfaction";
+    }
+    return "";
+  }, [selectedPrestation, getSelectedServiceData]);
+
+  // Fonction pour obtenir le nom de l'opération sélectionnée
+  const getSelectedOperationName = useCallback(() => {
+    if (selectedPrestation === "Service") {
+      return getSelectedOperationData().name || "";
+    } else if (selectedPrestation === "Priorisation") {
+      return "Rencontrer un conseiller";
+    } else if (selectedPrestation === "Satisfaction") {
+      return selectedEmotion ? `Feedback: ${selectedEmotion}` : "Feedback";
+    }
+    return "";
+  }, [selectedPrestation, selectedEmotion, getSelectedOperationData]);
 
   // Rendu du contenu en fonction de l'étape actuelle
-  const renderStepContent = () => {
-    // Gestion du chargement initial des services
+  const renderStepContent = useCallback(() => {
+    // Gestion des états de chargement et d'erreur
     if (fetchServiceLoading && step === 0) {
       return (
         <div className="loading-container">
@@ -302,8 +586,7 @@ const VerticalTicketWizard = () => {
       );
     }
 
-    // Gestion du chargement des opérations
-    if (fetchOperationLoading && step === 1) {
+    if (fetchOperationLoading && step === 2) {
       return (
         <div className="loading-container">
           <Loader size="lg" content="Chargement des opérations..." vertical />
@@ -311,7 +594,6 @@ const VerticalTicketWizard = () => {
       );
     }
 
-    // Gestion du chargement des transitions
     if (isLoading) {
       return (
         <div className="loading-container">
@@ -320,28 +602,43 @@ const VerticalTicketWizard = () => {
       );
     }
 
-    // Gestion des erreurs de chargement des services
     if (fetchServiceError && step === 0) {
       return (
         <div className="error-container">
-          <p className="error-message">Erreur lors du chargement des services. Veuillez réessayer.</p>
-          <Button onClick={refetchServices} appearance="primary">Réessayer</Button>
+          <Button onClick={refetchServices} appearance="primary">
+            Réessayer
+          </Button>
         </div>
       );
     }
 
-    // Gestion des erreurs de chargement des opérations
-    if (fetchOperationError && step === 1) {
+    if (fetchOperationError && step === 2) {
       return (
         <div className="error-container">
-          <p className="error-message">Erreur lors du chargement des opérations. Veuillez réessayer.</p>
-          <Button onClick={refetchOperations} appearance="primary">Réessayer</Button>
+          <Button onClick={refetchOperations} appearance="primary">
+            Réessayer
+          </Button>
         </div>
       );
     }
 
+    // Rendu des étapes
     switch (step) {
       case 0:
+        return (
+          <Fade in={true}>
+            <PrestationSelection
+              selectedService={selectedPrestation}
+              selectionDelay={selectionDelay}
+              handleServiceSelect={handlePrestationSelect}
+              handleNext={handleNext}
+              getSelectedServiceColor={getSelectedPrestationColor}
+              isMobile={isMobile}
+            />
+          </Fade>
+        );
+
+      case 1:
         return (
           <Fade in={true}>
             <ServiceSelection
@@ -350,13 +647,44 @@ const VerticalTicketWizard = () => {
               selectionDelay={selectionDelay}
               handleServiceSelect={handleServiceSelect}
               handleNext={handleNext}
-              getSelectedServiceColor={() => getSelectedServiceData().color || ''}
+              getSelectedServiceColor={() =>
+                getSelectedServiceData().color || ""
+              }
+              isMobile={isMobile}
+              handlePrevious={handlePrevious}
+            />
+          </Fade>
+        );
+
+      case 1.5:
+        return (
+          <Fade in={true}>
+            <PriorisationCodeStep
+              priorisationCode={priorisationCode}
+              handlePriorisationCodeChange={handlePriorisationCodeChange}
+              handlePriorisationCodeSubmit={handlePriorisationCodeSubmit}
+              handlePrevious={handlePrevious}
+              validationErrors={validationErrors}
+              getSelectedPrestationColor={getSelectedPrestationColor}
               isMobile={isMobile}
             />
           </Fade>
         );
 
-      case 1:
+      case 1.75:
+        return (
+          <Fade in={true}>
+            <SatisfactionFeedback
+              selectedEmotion={selectedEmotion}
+              handleEmotionSelect={handleEmotionSelect}
+              handlePrevious={handlePrevious}
+              getSelectedPrestationColor={getSelectedPrestationColor}
+              isMobile={isMobile}
+            />
+          </Fade>
+        );
+
+      case 2:
         return (
           <Fade in={true}>
             <OperationSelection
@@ -367,8 +695,10 @@ const VerticalTicketWizard = () => {
               handleOperationSelect={handleOperationSelect}
               handlePrevious={handlePrevious}
               handleNext={handleNext}
-              getSelectedServiceName={() => getSelectedServiceData().name || ''}
-              getSelectedOperationColor={() => getSelectedOperationData().color || ''}
+              getSelectedServiceName={getSelectedServiceName}
+              getSelectedOperationColor={() =>
+                getSelectedOperationData().color || ""
+              }
               serviceIcons={serviceIcons}
               isMobile={isMobile}
               getSelectedServiceData={getSelectedServiceData}
@@ -376,7 +706,7 @@ const VerticalTicketWizard = () => {
           </Fade>
         );
 
-      case 2:
+      case 3:
         return (
           <Fade in={true}>
             <UserInfoForm
@@ -387,29 +717,9 @@ const VerticalTicketWizard = () => {
               handleNext={handleNext}
               validateUserData={validateUserData}
               selectedService={selectedService}
-              getSelectedServiceName={() => getSelectedServiceData().name || ''}
-              getSelectedServiceColor={() => getSelectedServiceData().color || ''}
+              getSelectedServiceName={getSelectedServiceName}
+              getSelectedServiceColor={getSelectedPrestationColor}
               serviceIcons={serviceIcons}
-            />
-          </Fade>
-        );
-
-      case 3:
-        return (
-          <Fade in={true}>
-            <SummaryStep
-              userData={userData}
-              selectedService={selectedService}
-              selectedOperation={selectedOperation}
-              getSelectedServiceName={() => getSelectedServiceData().name || ''}
-              getSelectedServiceColor={() => getSelectedServiceData().color || ''}
-              getSelectedOperationName={() => getSelectedOperationData().name || ''}
-              getSelectedOperationColor={() => getSelectedOperationData().color || ''}
-              handlePrevious={handlePrevious}
-              handleNext={handleNext}
-              serviceIcons={serviceIcons}
-              apiSubmitting={apiSubmitting}
-              apiError={apiError}
             />
           </Fade>
         );
@@ -417,12 +727,36 @@ const VerticalTicketWizard = () => {
       case 4:
         return (
           <Fade in={true}>
+            <SummaryStep
+              userData={userData}
+              selectedService={selectedService}
+              selectedOperation={selectedOperation}
+              getSelectedServiceName={getSelectedServiceName}
+              getSelectedServiceColor={getSelectedPrestationColor}
+              getSelectedOperationName={getSelectedOperationName}
+              getSelectedOperationColor={getSelectedPrestationColor}
+              handlePrevious={handlePrevious}
+              handleNext={handleNext}
+              serviceIcons={serviceIcons}
+              apiSubmitting={apiSubmitting}
+              apiError={apiError}
+              selectedPrestation={selectedPrestation}
+              priorisationCode={priorisationCode}
+              selectedEmotion={selectedEmotion}
+            />
+          </Fade>
+        );
+
+      case 5:
+        return (
+          <Fade in={true}>
             <TicketSuccess
               ticketNumber={ticketNumber}
               userData={userData}
-              getSelectedServiceName={() => getSelectedServiceData().name || ''}
-              getSelectedOperationName={() => getSelectedOperationData().name || ''}
+              getSelectedServiceName={getSelectedServiceName}
+              getSelectedOperationName={getSelectedOperationName}
               handleConfirm={handleConfirm}
+              handleReset={handleReset} // Ajout de ce prop pour permettre la redirection
             />
           </Fade>
         );
@@ -430,63 +764,152 @@ const VerticalTicketWizard = () => {
       default:
         return null;
     }
-  };
+  }, [
+    step,
+    fetchServiceLoading,
+    fetchOperationLoading,
+    isLoading,
+    fetchServiceError,
+    fetchOperationError,
+    refetchServices,
+    refetchOperations,
+    selectedPrestation,
+    selectionDelay,
+    handlePrestationSelect,
+    handleNext,
+    getSelectedPrestationColor,
+    isMobile,
+    services,
+    selectedService,
+    handleServiceSelect,
+    getSelectedServiceData,
+    handlePrevious,
+    priorisationCode,
+    handlePriorisationCodeChange,
+    handlePriorisationCodeSubmit,
+    validationErrors,
+    selectedEmotion,
+    handleEmotionSelect,
+    operations,
+    selectedOperation,
+    operationDelay,
+    handleOperationSelect,
+    getSelectedServiceName,
+    getSelectedOperationData,
+    userData,
+    handleUserDataChange,
+    validateUserData,
+    apiSubmitting,
+    apiError,
+    getSelectedOperationName,
+    ticketNumber,
+  ]);
+
+  // Rendu des étapes disponibles
+  const renderSteps = useCallback(() => {
+    const stepsArr = [];
+
+    stepsArr.push(
+      <Steps.Item
+        key="prestation"
+        title="Prestation"
+        description={isMobile ? "" : "Choisissez votre prestation"}
+      />
+    );
+
+    if (selectedPrestation === "Service") {
+      stepsArr.push(
+        <Steps.Item
+          key="service"
+          title="Service"
+          description={isMobile ? "" : "Choisissez votre service"}
+        />
+      );
+      stepsArr.push(
+        <Steps.Item
+          key="operations"
+          title="Opérations"
+          description={isMobile ? "" : "Type d'opération"}
+        />
+      );
+    } else if (selectedPrestation === "Priorisation") {
+      stepsArr.push(
+        <Steps.Item
+          key="priorisation"
+          title="Code"
+          description={isMobile ? "" : "Code de priorisation"}
+        />
+      );
+    } else if (selectedPrestation === "Satisfaction") {
+      stepsArr.push(
+        <Steps.Item
+          key="satisfaction"
+          title="Feedback"
+          description={isMobile ? "" : "Votre satisfaction"}
+        />
+      );
+    }
+
+    stepsArr.push(
+      <Steps.Item
+        key="infos"
+        title="Infos"
+        description={isMobile ? "" : "Vos coordonnées"}
+      />
+    );
+
+    stepsArr.push(
+      <Steps.Item
+        key="resume"
+        title="Résumé"
+        description={isMobile ? "" : "Vérifiez vos informations"}
+      />
+    );
+
+    stepsArr.push(
+      <Steps.Item
+        key="termine"
+        title="Terminé"
+        description={isMobile ? "" : "Récupérez votre ticket"}
+      />
+    );
+
+    return stepsArr;
+  }, [selectedPrestation, isMobile]);
 
   return (
-    <div className="ticket-wizard-container">
-      {/* Barre de navigation stylisée */}
-      <WizardNavbar />
-
-      <div className="wizard-layout">
-        {/* Wizard Steps - Vertical pour écran large, Horizontal pour petit écran */}
-        <div className="wizard-sidebar">
-          <div className="wizard-steps-card rounded-bottom mb-20">
+    <div className="ticket-wizard-container m-20">
+      {/* En-tête fixe */}
+      <div className="fixed-header">
+        <WizardNavbar />
+        <div className="wizard-steps-container">
+          <div className="wizard-steps-card rounded-bottom">
             <Steps
-              current={step}
+              current={calculateStepIndex()}
               vertical={!isMobile}
               small={isExtraSmall}
             >
-              <Steps.Item
-                title="Service"
-                description={isMobile ? "" : "Choisissez votre service"}
-              />
-              <Steps.Item
-                title="Opérations"
-                description={isMobile ? "" : "Type d'opération"}
-              />
-              <Steps.Item
-                title="Infos"
-                description={isMobile ? "" : "Vos coordonnées"}
-              />
-              <Steps.Item
-                title="Résumé"
-                description={isMobile ? "" : "Vérifiez vos informations"}
-              />
-              <Steps.Item
-                title="Terminé"
-                description={isMobile ? "" : "Récupérez votre ticket"}
-              />
+              {renderSteps()}
             </Steps>
           </div>
         </div>
+      </div>
 
-        {/* Contenu principal */}
-        <div className="wizard-content">
-          <Panel className="wizard-panel">
-            {renderStepContent()}
-            <ToastContainer position="top-right" autoClose={5000} hideProgressBar={false} />
+      {/* Contenu principal */}
+      <div className="main-content-area">
+        <Panel className="wizard-panel">
+          {renderStepContent()}
+          <ToastContainer position="top-right" autoClose={5000} />
+        </Panel>
+      </div>
 
-          </Panel>
-
-          <WizardFooter />
-        </div>
+      {/* Footer */}
+      <div className="fixed-footer">
+        <WizardFooter />
       </div>
 
       {/* Modal de confirmation */}
-      <SuccessModal
-        showSuccess={showSuccess}
-        handleReset={handleReset}
-      />
+      <SuccessModal showSuccess={showSuccess} handleReset={handleReset} />
     </div>
   );
 };

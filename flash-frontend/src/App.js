@@ -1,14 +1,10 @@
-import './App.css';
-import React from 'react';
-import { HashRouter as Router, Routes, Route } from 'react-router-dom';
+import "./App.css";
+import React from "react";
+import { HashRouter as Router, Routes, Route } from "react-router-dom";
 // import LoadExternalScripts from './AppComponents/LoadExternalScripts';
-import Wizard from './AppPages/Home/Wizard';
-import VerticalTicketWizard from './AppPages/Home/wiazard/VerticalTicketWizard';
-import ModernQueueSystem from './AppPages/Home/Ecran/ModernQueueSystem';
-
-
-
-
+import Wizard from "./AppPages/Home/Wizard";
+import VerticalTicketWizard from "./AppPages/Home/wiazard/VerticalTicketWizard";
+import ModernQueueSystem from "./AppPages/Home/Ecran/ModernQueueSystem";
 
 function App() {
   return (
@@ -21,7 +17,6 @@ function App() {
             {/* <Route path="/" element={<Wizard />} /> */}
             <Route path="/" element={<VerticalTicketWizard />} />
             <Route path="/ecran" element={<ModernQueueSystem />} />
-
           </Routes>
         </div>
         {/* <Footer /> */}

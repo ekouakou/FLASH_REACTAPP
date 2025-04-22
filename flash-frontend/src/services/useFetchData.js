@@ -11,7 +11,8 @@ import { useNavigate } from "react-router-dom";
  * @param {number} refreshTrigger - Déclencheur pour rafraîchir les données
  * @returns {Object} Les données récupérées, l'état du chargement, les erreurs et la fonction refetch
  */
-const useFetchData = (apiEndPoint, params, dataKey, refreshTrigger = 0) => {
+const useFetchData = (apiEndPoint, params, dataKey, refreshTrigger = 0, skip = false) => {
+
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -19,21 +20,19 @@ const useFetchData = (apiEndPoint, params, dataKey, refreshTrigger = 0) => {
 
   // Fonction pour vérifier si un objet contient des valeurs null ou undefined
   const validateParams = (params) => {
-    if (!params) return false;
-
-    // Créer une copie propre des paramètres en supprimant les valeurs null/undefined
+    console.log("validateParams called with:", params); // 🔍 debug ici
+    if (!params) return { isValid: false, cleanParams: {} };
     const cleanParams = {};
     let isValid = false;
-
     for (const key in params) {
       if (params[key] !== null && params[key] !== undefined) {
         cleanParams[key] = params[key];
-        isValid = true; // Au moins un paramètre valide
+        isValid = true;
       }
     }
-
     return { isValid, cleanParams };
   };
+  
 
   // Fonction pour récupérer les données
   const fetchData = async () => {
@@ -77,8 +76,10 @@ const useFetchData = (apiEndPoint, params, dataKey, refreshTrigger = 0) => {
 
   // Effet pour récupérer les données au chargement ou quand refreshTrigger change
   useEffect(() => {
-    fetchData();
-  }, [rootUrl + apiEndPoint, JSON.stringify(params), refreshTrigger]); // Inclure refreshTrigger dans les dépendances
+    if (!skip) {
+      fetchData();
+    }
+  }, [rootUrl + apiEndPoint, JSON.stringify(params), refreshTrigger, skip]);
 
   return { data, loading, error, refetch };
 };

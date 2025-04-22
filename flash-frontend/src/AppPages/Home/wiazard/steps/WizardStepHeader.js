@@ -6,7 +6,7 @@ import PropTypes from 'prop-types';
 const WizardStepHeader = ({ title, description }) => {
   return (
     <div className="wizard-step-header">
-      <h3 className="wizard-step-title">{title}</h3>
+      <h4 className="wizard-step-title">{title}</h4>
       <p className="wizard-step-description">{description}</p>
     </div>
   );

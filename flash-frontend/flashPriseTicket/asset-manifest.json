@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/flashPriseTicket/static/css/main.552579c6.css",
+    "main.js": "/flashPriseTicket/static/js/main.66423d34.js",
+    "static/js/453.052e1f44.chunk.js": "/flashPriseTicket/static/js/453.052e1f44.chunk.js",
+    "index.html": "/flashPriseTicket/index.html",
+    "main.552579c6.css.map": "/flashPriseTicket/static/css/main.552579c6.css.map",
+    "main.66423d34.js.map": "/flashPriseTicket/static/js/main.66423d34.js.map",
+    "453.052e1f44.chunk.js.map": "/flashPriseTicket/static/js/453.052e1f44.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.552579c6.css",
+    "static/js/main.66423d34.js"
+  ]
+}

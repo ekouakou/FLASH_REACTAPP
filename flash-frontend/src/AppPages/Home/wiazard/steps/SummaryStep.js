@@ -1,6 +1,6 @@
-// steps/SummaryStep.jsx
 import React from 'react';
 import { List, FlexboxGrid, Message, Button, Stack, Loader } from 'rsuite';
+import { serviceIcons, serviceColors } from "../constants";
 
 const SummaryStep = ({
   userData,
@@ -10,14 +10,19 @@ const SummaryStep = ({
   getSelectedServiceColor,
   getSelectedOperationName,
   getSelectedOperationColor,
+  priorisationCode,
+  selectedEmotion,
+  emotions, // Array of emotion objects from SatisfactionFeedback
   handlePrevious,
   handleNext,
-  serviceIcons,
   apiSubmitting,
   apiError
 }) => {
+  // Find the selected emotion object if available
+  const selectedEmotionData = emotions?.find(emotion => emotion.id === selectedEmotion);
+  
   return (
-    <div>
+    <div className="wizard-container">
       <h3 className="wizard-step-title" style={{ "--primary": getSelectedServiceColor() }}>
         Résumé de votre demande
       </h3>
@@ -51,9 +56,6 @@ const SummaryStep = ({
               </FlexboxGrid.Item>
               <FlexboxGrid.Item colspan={18}>
                 <div className="summary-item-value-container" style={{ backgroundColor: `${getSelectedOperationColor()}15` }}>
-                  {/* <span className="summary-item-icon" style={{ color: getSelectedOperationColor() }}>
-                    {selectedOperation.charAt(0).toUpperCase()}
-                  </span> */}
                   <span className="summary-item-value" style={{ color: getSelectedOperationColor() }}>
                     {getSelectedOperationName()}
                   </span>
@@ -61,6 +63,42 @@ const SummaryStep = ({
               </FlexboxGrid.Item>
             </FlexboxGrid>
           </List.Item>
+          
+          {/* Affichage du code de priorisation si disponible */}
+          {priorisationCode && (
+            <List.Item>
+              <FlexboxGrid justify="start" align="middle">
+                <FlexboxGrid.Item colspan={6}>
+                  <strong className="summary-item-label">Code de priorisation :</strong>
+                </FlexboxGrid.Item>
+                <FlexboxGrid.Item colspan={18}>
+                  {priorisationCode}
+                </FlexboxGrid.Item>
+              </FlexboxGrid>
+            </List.Item>
+          )}
+          
+          {/* Affichage de l'émoticône de satisfaction si disponible */}
+          {selectedEmotionData && (
+            <List.Item>
+              <FlexboxGrid justify="start" align="middle">
+                <FlexboxGrid.Item colspan={6}>
+                  <strong className="summary-item-label">Satisfaction :</strong>
+                </FlexboxGrid.Item>
+                <FlexboxGrid.Item colspan={18}>
+                  <div className="summary-item-value-container" style={{ backgroundColor: `${selectedEmotionData.color}15` }}>
+                    <span className="summary-item-icon" style={{ color: selectedEmotionData.color }}>
+                      {selectedEmotionData.iconName}
+                    </span>
+                    <span className="summary-item-value" style={{ color: selectedEmotionData.color }}>
+                      {selectedEmotionData.name}
+                    </span>
+                  </div>
+                </FlexboxGrid.Item>
+              </FlexboxGrid>
+            </List.Item>
+          )}
+          
           <List.Item>
             <FlexboxGrid justify="start">
               <FlexboxGrid.Item colspan={6}>

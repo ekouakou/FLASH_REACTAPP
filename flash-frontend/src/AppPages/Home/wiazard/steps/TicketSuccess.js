@@ -1,5 +1,5 @@
 // steps/TicketSuccess.jsx
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Button } from 'rsuite';
 
 const TicketSuccess = ({
@@ -7,8 +7,22 @@ const TicketSuccess = ({
   userData,
   getSelectedServiceName,
   getSelectedOperationName,
-  handleConfirm
+  handleConfirm,
+  handleReset  // Nous devons ajouter ce prop pour pouvoir réinitialiser après le délai
 }) => {
+  // Ajouter un effet pour rediriger automatiquement après 5 secondes
+  useEffect(() => {
+    // Créer un timer qui réinitialisera le wizard après 5 secondes
+    const redirectTimer = setTimeout(() => {
+      handleReset(); // Appel direct à handleReset pour revenir à l'étape 1
+    }, 5000);
+
+    // Nettoyage du timer si le composant est démonté
+    return () => {
+      clearTimeout(redirectTimer);
+    };
+  }, [handleReset]);  // Dépendance au handleReset pour éviter les problèmes de stale closure
+
   return (
     <div className="ticket-success-container">
       <div className="ticket-success-icon">✅</div>
@@ -34,9 +48,9 @@ const TicketSuccess = ({
         </div>
       </div>
 
-      {/* <p className="ticket-message">
-        Veuillez patienter, nous vous appellerons bientôt.
-      </p> */}
+      <p className="ticket-message">
+        Redirection automatique dans 5 secondes...
+      </p>
 
       <Button
         appearance="primary"

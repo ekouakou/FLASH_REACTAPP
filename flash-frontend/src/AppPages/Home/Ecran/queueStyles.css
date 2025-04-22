@@ -20,7 +20,7 @@ body.dark .main-container {
 /* Header */
 body.light .app-header {
   padding: 15px 20px;
-  background: white;
+  background: #010f51;
   box-shadow: 0 1px 2px rgba(0,0,0,0.05);
 }
 
@@ -77,8 +77,8 @@ body.dark .current-time, body.dark .current-date {
 
 /* Barre de message défilant */
 body.light .message-scroll-bar {
-  background: linear-gradient(90deg, #3182ce, #4f46e5);
-  color: white;
+  background: white;
+  color: #000;
 }
 
 body.dark .message-scroll-bar {
@@ -135,7 +135,8 @@ body.dark .message-scroll-bar {
 .video-frame {
   width: 100%;
   max-height: 100%;
-  object-fit: cover;
+  /* object-fit: cover; */
+  background-color: #000;
 }
 
 
@@ -274,8 +275,21 @@ body.dark .message-scroll-bar {
 }
 
 .queue-item.active {
-  background: #f0fff4;
+  background: #02ad02;
+  
 }
+
+.queue-item.active  .queue-name{
+  color: #fff;
+  font-size: 30px;
+  font-weight: bold;
+}
+.queue-item.active  .queue-status.gray, .queue-item.active .queue-room{
+  color: #fff;
+  font-size: 12px;
+  font-weight: bold;
+}
+
 
 .queue-number {
   width: 40px;
@@ -587,7 +601,7 @@ body.dark .message-scroll-bar {
 }
 
 .banner-image {
-  width: 100%;
+  /* width: 100%; */
   height: 100%;
   object-fit: contain;
 }
@@ -596,3 +610,84 @@ body.dark .message-scroll-bar {
   margin-left: 10px;
 }
 
+.rs-scroll-view.rs-scroll-view-custom-scrollbar {
+  height: 100%;
+
+}
+
+.currency-slide-header {
+  display: flex;
+  align-items: center; /* Centre verticalement */
+  gap: 10px; /* (optionnel) Espacement entre les éléments */
+}
+
+
+.currency-slide-header {
+  justify-content: center; /* Centre aussi horizontalement */
+}
+
+.currency-slide-header img {
+  display: block;
+}
+
+.py-2{
+  padding: 10px ;
+}
+
+
+
+
+/* wizard-styles.css */
+
+/* Style pour le conteneur principal */
+.wizard-container {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  max-height: 600px;
+  overflow: hidden;
+}
+
+/* Style pour la section de contenu avec défilement */
+.wizard-content {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding-bottom: 70px; /* Espace pour éviter que le contenu ne soit caché derrière les boutons */
+}
+
+/* Style pour la barre d'actions en bas */
+.wizard-actions {
+  position: absolute;
+  bottom: 30px;
+  left: 0;
+  right: 0;
+  padding: 15px 0;
+  display: flex;
+  justify-content: space-between;
+  z-index: 10; /* Pour s'assurer que les boutons sont au-dessus du contenu */
+}
+
+/* Style pour la section d'en-tête avec service sélectionné */
+.wizard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+/* Style pour le conteneur de chargement */
+.loading-container {
+  padding: 40px 0;
+  text-align: center;
+}
+
+/* Style pour assurer une hauteur égale des colonnes */
+.equal-height-col {
+  margin-bottom: 20px;
+}
+
+/* Style pour la grille de sélection */
+.selection-grid {
+  width: 100%;
+}

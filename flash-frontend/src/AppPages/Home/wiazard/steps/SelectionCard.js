@@ -1,6 +1,7 @@
 // components/SelectionCard.jsx
 import React from 'react';
-import { serviceIcons } from '../VerticalTicketWizard';
+import { serviceIcons, serviceColors, API_ENDPOINTS } from "../constants";
+
 
 const SelectionCard = ({
   item,

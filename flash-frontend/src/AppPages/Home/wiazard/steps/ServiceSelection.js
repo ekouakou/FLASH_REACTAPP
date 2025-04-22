@@ -1,7 +1,7 @@
 // steps/ServiceSelection.jsx
-import React from 'react';
-import { Grid, Row, Col, Button, Loader } from 'rsuite';
-import SelectionCard from './SelectionCard';
+import React from "react";
+import { Grid, Row, Col, Button, Loader } from "rsuite";
+import SelectionCard from "./SelectionCard";
 
 const ServiceSelection = ({
   services,
@@ -9,8 +9,9 @@ const ServiceSelection = ({
   selectionDelay,
   handleServiceSelect,
   handleNext,
+  handlePrevious,
   getSelectedServiceColor,
-  isMobile
+  isMobile,
 }) => {
   // Vérifier si les services sont chargés
   if (!services || services.length === 0) {
@@ -22,10 +23,8 @@ const ServiceSelection = ({
   }
 
   return (
-    <div>
-      <h3 className="wizard-step-title">
-        Sélectionnez le service souhaité
-      </h3>
+    <div className="wizard-container">
+      <h3 className="wizard-step-title">Sélectionnez le service souhaité</h3>
       <p className="wizard-step-description">
         Choisissez le service qui correspond à votre besoin pour commencer.
       </p>
@@ -33,12 +32,21 @@ const ServiceSelection = ({
       <Grid fluid className="selection-grid">
         <Row gutter={isMobile ? 10 : 20}>
           {services.map((service) => (
-            <Col xs={24} sm={12} md={8} key={service.id} style={{ marginBottom: '20px' }}  className="equal-height-col">
+            <Col
+              xs={24}
+              sm={12}
+              md={6}
+              key={service.id}
+              style={{ marginBottom: "20px" }}
+              className="equal-height-col"
+            >
               <SelectionCard
                 item={service}
                 isSelected={selectedService === service.id}
                 disabled={selectionDelay && selectedService !== service.id}
-                onSelect={() => !selectionDelay && handleServiceSelect(service.id)}
+                onSelect={() =>
+                  !selectionDelay && handleServiceSelect(service.id)
+                }
                 icon={service.id} // On utilise l'ID comme clé pour l'icône
                 type="service"
               />
@@ -47,7 +55,7 @@ const ServiceSelection = ({
         </Row>
       </Grid>
 
-      {selectedService && !selectionDelay && (
+      {/* {selectedService && !selectionDelay && (
         <div className="wizard-actions">
           <div></div>
           <Button
@@ -61,7 +69,23 @@ const ServiceSelection = ({
             Continuer
           </Button>
         </div>
-      )}
+      )} */}
+      <div className="wizard-actions">
+        <Button appearance="subtle" onClick={handlePrevious}>Retour</Button>
+
+        {selectedService && !selectionDelay && (
+          <Button
+            appearance="primary"
+            onClick={handleNext}
+            style={{
+              backgroundColor: getSelectedServiceColor(),
+              borderColor: getSelectedServiceColor(),
+            }}
+          >
+            Continuer
+          </Button>
+        )}
+      </div>
     </div>
   );
 };
