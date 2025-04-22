@@ -4,8 +4,8 @@ import {
 } from 'rsuite';
 import 'rsuite/dist/rsuite.min.css';
 import './Wizard.css'; // Importation du fichier CSS externalisé
-import WizardNavbar from './WizardNavbar';
-import WizardFooter from './WizardFooter';
+// import WizardNavbar from './WizardNavbar';
+// import WizardFooter from './WizardFooter';
 
 
 // Utiliser des emojis au lieu d'icônes pour éviter les problèmes d'importation
@@ -606,7 +606,7 @@ const VerticalTicketWizard = () => {
   return (
     <div className="ticket-wizard-container">
       {/* Barre de navigation stylisée */}
-      <WizardNavbar />
+      {/* <WizardNavbar /> */}
 
       <div className="wizard-layout">
         {/* Wizard Steps - Vertical pour écran large, Horizontal pour petit écran */}
@@ -664,7 +664,7 @@ const VerticalTicketWizard = () => {
             {renderStepContent()}
           </Panel>
 
-          <WizardFooter />
+          {/* <WizardFooter /> */}
         </div>
       </div>
 

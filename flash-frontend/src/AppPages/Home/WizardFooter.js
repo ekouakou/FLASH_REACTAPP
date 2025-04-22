@@ -7,9 +7,9 @@ const WizardFooter = () => {
       {/* Section bas de page */}
       <div className="image-container">
         <img
-          src="https://afgbankcotedivoire.com/wp-content/themes/cdg/images/logo.png"
+          src="assets/images/logos/logo_nkm.svg"
           alt="Icône Operations de caisse"
-          height="20"
+          height="30"
           className="centered-image"
         />
       </div>

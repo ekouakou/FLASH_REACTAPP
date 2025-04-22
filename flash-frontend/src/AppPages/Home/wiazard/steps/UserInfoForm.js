@@ -71,7 +71,7 @@ const UserInfoForm = ({
           <Form.HelpText>Nous vous enverrons une confirmation si fourni</Form.HelpText>
         </Form.Group> */}
 
-        <Message showIcon type="info" style={{ marginTop: "20px" }}>
+        <Message showIcon type="info" style={{ marginTop: "20px", marginBottom: "20px" }}>
           Les champs marqués d'un * sont obligatoires
         </Message>
       </Form>

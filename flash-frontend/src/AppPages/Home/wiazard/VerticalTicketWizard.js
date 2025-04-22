@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Steps, Panel, Loader, Animation, Button, useMediaQuery } from "rsuite";
+import { useParams } from "react-router-dom";
+
 import "rsuite/dist/rsuite.min.css";
 import "../Wizard.css";
 import WizardNavbar from "../WizardNavbar";
@@ -28,6 +30,7 @@ import { serviceIcons, serviceColors, API_ENDPOINTS } from "./constants";
 const { Fade } = Animation;
 
 const VerticalTicketWizard = () => {
+  const { PARAM_LG_AGEID } = useParams();
   // États principaux regroupés par catégorie
   const [wizardState, setWizardState] = useState({
     step: 0,
@@ -81,7 +84,7 @@ const VerticalTicketWizard = () => {
     LG_TYLID: "SERVICE",
     mode: "listServicebyagence",
     order: "t.STR_LSTOTHERVALUE2",
-    LG_AGEID: "004",
+    LG_AGEID: PARAM_LG_AGEID,
   };
 
   const {
@@ -98,7 +101,7 @@ const VerticalTicketWizard = () => {
     STR_LSTOTHERVALUE: selectedService,
     mode: "listAgenceListe",
     order: "t.lgLstid.strLstothervalue2",
-    LG_AGEID: "004",
+    LG_AGEID: PARAM_LG_AGEID,
   };
 
   // const {
@@ -393,9 +396,9 @@ const VerticalTicketWizard = () => {
 
         const requestData = {
           // Valeurs communes à tous les types de prestation
-          LG_AGEID: "004",
+          LG_AGEID: PARAM_LG_AGEID,
           LG_SOCID: "03",
-          STR_UTITOKEN: "0b5c7e97130599df6b3d",
+          STR_UTITOKEN: "",
           STR_TICPHONE: userData.phone || "0749345289",
           STR_TICNAME: userData.name,
           STR_TICEMAIL: userData.email,

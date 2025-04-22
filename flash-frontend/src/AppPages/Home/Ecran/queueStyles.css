@@ -610,10 +610,7 @@ body.dark .message-scroll-bar {
   margin-left: 10px;
 }
 
-.rs-scroll-view.rs-scroll-view-custom-scrollbar {
-  height: 100%;
 
-}
 
 .currency-slide-header {
   display: flex;
@@ -640,33 +637,7 @@ body.dark .message-scroll-bar {
 /* wizard-styles.css */
 
 /* Style pour le conteneur principal */
-.wizard-container {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  max-height: 600px;
-  overflow: hidden;
-}
 
-/* Style pour la section de contenu avec défilement */
-.wizard-content {
-  flex: 1 1 auto;
-  overflow-y: auto;
-  padding-bottom: 70px; /* Espace pour éviter que le contenu ne soit caché derrière les boutons */
-}
-
-/* Style pour la barre d'actions en bas */
-.wizard-actions {
-  position: absolute;
-  bottom: 30px;
-  left: 0;
-  right: 0;
-  padding: 15px 0;
-  display: flex;
-  justify-content: space-between;
-  z-index: 10; /* Pour s'assurer que les boutons sont au-dessus du contenu */
-}
 
 /* Style pour la section d'en-tête avec service sélectionné */
 .wizard-header {

@@ -17,18 +17,21 @@ const PrestationSelection = forwardRef(({
       name: "Service",
       description: "Renseignements généraux",
       color: "#3498db",
+      imagePath:"assets/images/logos/services.svg"
     },
     {
       id: "Priorisation",
       name: "Priorisation",
       description: "Rencontrer un conseiller",
       color: "#9b59b6",
+      imagePath:"assets/images/logos/prioritize.svg"
     },
     {
       id: "Satisfaction",
       name: "Satisfaction",
       description: "Effectuer un paiement",
       color: "#2ecc71",
+      imagePath:"assets/images/logos/emoticone-excellent.svg"
     },
   ];
 

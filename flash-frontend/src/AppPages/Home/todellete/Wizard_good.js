@@ -17,7 +17,7 @@ import {
   Animation
 } from 'rsuite';
 import 'rsuite/dist/rsuite.min.css';
-import ThemeSwitcher from './ThemeSwitcher';
+import ThemeSwitcher from '../ThemeSwitcher';
 
 
 // Palette de couleurs personnalisée pour une meilleure cohérence visuelle

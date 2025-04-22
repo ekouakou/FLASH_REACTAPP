@@ -20,7 +20,7 @@ const SummaryStep = ({
 }) => {
   // Find the selected emotion object if available
   const selectedEmotionData = emotions?.find(emotion => emotion.id === selectedEmotion);
-  
+
   return (
     <div className="wizard-container">
       <h3 className="wizard-step-title" style={{ "--primary": getSelectedServiceColor() }}>
@@ -31,125 +31,65 @@ const SummaryStep = ({
       </p>
 
       <div className="summary-container">
-        <List bordered style={{ borderRadius: '8px' }}>
-          <List.Item>
-            <FlexboxGrid justify="start" align="middle">
-              <FlexboxGrid.Item colspan={6}>
-                <strong className="summary-item-label">Service :</strong>
-              </FlexboxGrid.Item>
-              <FlexboxGrid.Item colspan={18}>
-                <div className="summary-item-value-container" style={{ backgroundColor: `${getSelectedServiceColor()}15` }}>
-                  <span className="summary-item-icon" style={{ color: getSelectedServiceColor() }}>
-                    {serviceIcons[selectedService]}
-                  </span>
-                  <span className="summary-item-value" style={{ color: getSelectedServiceColor() }}>
-                    {getSelectedServiceName()}
-                  </span>
-                </div>
-              </FlexboxGrid.Item>
-            </FlexboxGrid>
-          </List.Item>
-          <List.Item>
-            <FlexboxGrid justify="start" align="middle">
-              <FlexboxGrid.Item colspan={6}>
-                <strong className="summary-item-label">Opération :</strong>
-              </FlexboxGrid.Item>
-              <FlexboxGrid.Item colspan={18}>
-                <div className="summary-item-value-container" style={{ backgroundColor: `${getSelectedOperationColor()}15` }}>
-                  <span className="summary-item-value" style={{ color: getSelectedOperationColor() }}>
-                    {getSelectedOperationName()}
-                  </span>
-                </div>
-              </FlexboxGrid.Item>
-            </FlexboxGrid>
-          </List.Item>
-          
-          {/* Affichage du code de priorisation si disponible */}
-          {priorisationCode && (
-            <List.Item>
-              <FlexboxGrid justify="start" align="middle">
-                <FlexboxGrid.Item colspan={6}>
-                  <strong className="summary-item-label">Code de priorisation :</strong>
-                </FlexboxGrid.Item>
-                <FlexboxGrid.Item colspan={18}>
-                  {priorisationCode}
-                </FlexboxGrid.Item>
-              </FlexboxGrid>
-            </List.Item>
-          )}
-          
-          {/* Affichage de l'émoticône de satisfaction si disponible */}
-          {selectedEmotionData && (
-            <List.Item>
-              <FlexboxGrid justify="start" align="middle">
-                <FlexboxGrid.Item colspan={6}>
-                  <strong className="summary-item-label">Satisfaction :</strong>
-                </FlexboxGrid.Item>
-                <FlexboxGrid.Item colspan={18}>
-                  <div className="summary-item-value-container" style={{ backgroundColor: `${selectedEmotionData.color}15` }}>
-                    <span className="summary-item-icon" style={{ color: selectedEmotionData.color }}>
-                      {selectedEmotionData.iconName}
-                    </span>
-                    <span className="summary-item-value" style={{ color: selectedEmotionData.color }}>
-                      {selectedEmotionData.name}
-                    </span>
-                  </div>
-                </FlexboxGrid.Item>
-              </FlexboxGrid>
-            </List.Item>
-          )}
-          
-          <List.Item>
-            <FlexboxGrid justify="start">
-              <FlexboxGrid.Item colspan={6}>
-                <strong className="summary-item-label">Nom :</strong>
-              </FlexboxGrid.Item>
-              <FlexboxGrid.Item colspan={18}>
-                {userData.name}
-              </FlexboxGrid.Item>
-            </FlexboxGrid>
-          </List.Item>
-          <List.Item>
-            <FlexboxGrid justify="start">
-              <FlexboxGrid.Item colspan={6}>
-                <strong className="summary-item-label">Téléphone :</strong>
-              </FlexboxGrid.Item>
-              <FlexboxGrid.Item colspan={18}>
-                {userData.phone}
-              </FlexboxGrid.Item>
-            </FlexboxGrid>
-          </List.Item>
-          {userData.email && (
-            <List.Item>
-              <FlexboxGrid justify="start">
-                <FlexboxGrid.Item colspan={6}>
-                  <strong className="summary-item-label">Email :</strong>
-                </FlexboxGrid.Item>
-                <FlexboxGrid.Item colspan={18}>
-                  {userData.email}
-                </FlexboxGrid.Item>
-              </FlexboxGrid>
-            </List.Item>
-          )}
-        </List>
+        <strong className="summary-item-label">Service :</strong>
+        <div className="summary-item-value-container" style={{ backgroundColor: `${getSelectedServiceColor()}15` }}>
+          <span className="summary-item-icon" style={{ color: getSelectedServiceColor() }}>
+            {serviceIcons[selectedService]}
+          </span>
+          <span className="summary-item-value" style={{ color: getSelectedServiceColor() }}>
+            {getSelectedServiceName()}
+          </span>
+        </div>
 
-        <Message
+        <strong className="summary-item-label">Opération :</strong>
+        <div className="summary-item-value-container" style={{ backgroundColor: `${getSelectedOperationColor()}15` }}>
+          <span className="summary-item-value" style={{ color: getSelectedOperationColor() }}>
+            {getSelectedOperationName()}
+          </span>
+        </div>
+
+        {priorisationCode && (
+          <>
+            <strong className="summary-item-label">Code de priorisation :</strong>
+            {priorisationCode}
+          </>
+
+        )}
+
+        {selectedEmotionData && (
+          <>
+            <strong className="summary-item-label">Satisfaction :</strong>
+            <div className="summary-item-value-container" style={{ backgroundColor: `${selectedEmotionData.color}15` }}>
+              <span className="summary-item-icon" style={{ color: selectedEmotionData.color }}>
+                {selectedEmotionData.iconName}
+              </span>
+              <span className="summary-item-value" style={{ color: selectedEmotionData.color }}>
+                {selectedEmotionData.name}
+              </span>
+            </div>
+          </>
+        )}
+
+        <strong className="summary-item-label">Nom :</strong>
+        {userData.name}
+        <strong className="summary-item-label">Téléphone :</strong>
+        {userData.phone}
+
+        {userData.email && (
+          <>
+            <strong className="summary-item-label">Email :</strong>
+            {userData.email}
+          </>
+        )}
+
+        <p
           showIcon
           type="warning"
           style={{ marginTop: '20px' }}
         >
           Après confirmation, un ticket sera généré et vous serez appelé(e) à votre tour.
-        </Message>
+        </p>
 
-        {apiError && (
-          <Message
-            showIcon
-            type="error"
-            style={{ marginTop: '10px' }}
-          >
-            {apiError}
-          </Message>
-        )}
       </div>
 
       <Stack spacing={10} direction="row" justifyContent="space-between" className="wizard-actions">
