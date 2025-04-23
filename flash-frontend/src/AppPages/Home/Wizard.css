@@ -153,7 +153,7 @@ body {
 }
 
 /* Layout et conteneurs */
-.fixed-header {
+/* .fixed-header {
   position: fixed;
   top: 0;
   left: 0;
@@ -162,7 +162,7 @@ body {
   margin: 0 auto;
   z-index: 1000;
   padding: 10px 0;
-}
+} */
 
 /* .main-content-area {
   flex: 1;
@@ -391,8 +391,11 @@ body {
   margin-top: 30px;
   position: fixed;
   bottom: 10%;
-  right: 50px;
+  right: 35px;
   z-index: 1000;
+  background-color: #ffffff;
+  padding: 7px;
+  border-radius: 8px;
 }
 
 /* Style pour la barre d'actions en bas */
@@ -754,7 +757,16 @@ body {
 }
 
 .userInfo {
-  font-size: 25px !important;
+  font-size: 17px !important;
+  font-weight: bold;
+}
+
+
+.rs-message-container {
+  display: -ms-flexbox;
+  display: flex
+;
+  padding: 5px ;
 }
 
 /* Style pour centrer l'image horizontalement */
@@ -791,15 +803,15 @@ html,
 body {
   height: 100%;
   margin: 0;
-  padding: 10px;
+  /* padding: 10px; */
   overflow: hidden;
 }
 
 .fixed-header {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
+  top: 10px;
+  left: 10px;
+  right: 10px;
   height: 100px;
   z-index: 100;
 }

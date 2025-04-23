@@ -200,7 +200,7 @@ function QueueList({ queueItems: initialQueueItems }) {
             <div
               className="no-queue-image"
               style={{
-                height: "700px",
+                height: "100%",
                 backgroundImage:
                   'url("https://afgbankcotedivoire.com/wp-content/uploads/2023/12/CONTACT12.jpg")',
                 backgroundSize: "cover",

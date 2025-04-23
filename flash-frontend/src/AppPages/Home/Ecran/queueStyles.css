@@ -129,7 +129,6 @@ body.dark .message-scroll-bar {
   height: 100%;
   overflow: hidden;
   border-radius: 8px;
-  margin-bottom: 15px;
 }
 
 .video-frame {
@@ -263,8 +262,7 @@ body.dark .message-scroll-bar {
 .queue-list-container {
   flex: 1;
   overflow-y: auto;
-  padding-top: 15px;
-  padding-top: 15px;
+  height: 100%;
 }
 
 .queue-item {
